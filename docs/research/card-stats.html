@@ -1,0 +1,165 @@
+<title>Payload Push Card Stats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a briefing strip of findings, then one sortable roster table, like a pre-match scouting sheet. */
+:root{
+  --bg:#f3f4f7; --panel:#ffffff; --fg:#171c26; --muted:#5d6577; --line:#dde1e9;
+  --accent:#f0821e; --accent-ink:#9a4a00;
+  --tank:#3f78c9; --damage:#d8483e; --support:#2f9e6e;
+  --s:#f0a500; --a:#7a5cf0; --b:#2f8fd8; --c:#7d8797; --d:#c0453d;
+  --bar:#e6e9f0;
+  --display:"Saira Condensed","Arial Narrow",sans-serif;
+  --body:"Figtree",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141c; --panel:#171c27; --fg:#e8ebf2; --muted:#98a1b3; --line:#2a3141;
+  --accent:#ff9a3d; --accent-ink:#ffb36b; --tank:#6ea2ef; --damage:#f2766c; --support:#4fc894;
+  --s:#ffc23d; --a:#a38cff; --b:#5fb0f0; --c:#8e97a8; --d:#f07068; --bar:#252c3b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141c; --panel:#171c27; --fg:#e8ebf2; --muted:#98a1b3; --line:#2a3141;
+  --accent:#ff9a3d; --accent-ink:#ffb36b; --tank:#6ea2ef; --damage:#f2766c; --support:#4fc894;
+  --s:#ffc23d; --a:#a38cff; --b:#5fb0f0; --c:#8e97a8; --d:#f07068; --bar:#252c3b; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:28px 48px;display:grid;gap:24px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,5vw,44px);line-height:1;margin:0;letter-spacing:.01em;text-transform:uppercase}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:6px 0 0;max-width:70ch}
+h2{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.finds{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:12px}
+.find{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px;min-width:0}
+.find b{display:block;font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:.02em;margin-bottom:2px}
+.find p{margin:0;color:var(--muted);font-size:14px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:6px 20px;font-size:13.5px;color:var(--muted)}
+.legend b{color:var(--fg);font-weight:600}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font:600 13px var(--body);padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip:focus-visible,input:focus-visible,th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#q{font:14px var(--body);padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--fg);min-width:0;flex:1 1 180px;max-width:260px}
+.count{color:var(--muted);font-size:13px;margin-left:auto}
+.tbl{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:980px;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--panel);text-align:left;border-bottom:1px solid var(--line);padding:0;z-index:1}
+th button{all:unset;cursor:pointer;display:block;padding:10px 10px;font:600 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+th button[data-dir]::after{content:" ▾";color:var(--accent)}
+th button[data-dir="asc"]::after{content:" ▴"}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.hero{display:flex;gap:10px;align-items:center;min-width:220px}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--c)}
+.hero .nm{font-weight:600}
+.hero .ab{font-size:12.5px;color:var(--muted);line-height:1.35}
+.role{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase}
+.role.tank{color:var(--tank)}.role.damage{color:var(--damage)}.role.support{color:var(--support)}
+.pw{font-family:var(--mono);font-size:14px}
+.deck{font-size:13px;color:var(--muted);white-space:nowrap}
+.pct{display:grid;grid-template-columns:34px 56px;gap:8px;align-items:center;font-family:var(--mono);font-size:13px}
+.pct i{display:block;height:6px;border-radius:3px;background:var(--bar);position:relative;overflow:hidden}
+.pct i em{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:3px}
+.syn small{display:block;font-family:var(--body);font-size:11.5px;color:var(--muted);margin-top:2px}
+.imp{font-family:var(--mono);font-size:13px}
+.imp.up{color:var(--support)}.imp.dn{color:var(--d)}
+.tier{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:5px;font:800 16px var(--display);color:#fff}
+.tier.S{background:var(--s);color:#2a1d00}.tier.A{background:var(--a)}.tier.B{background:var(--b)}.tier.C{background:var(--c)}.tier.D{background:var(--d)}
+.foot{color:var(--muted);font-size:13px;max-width:80ch}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Payload Push <span>card stats</span></h1>
+    <p class="sub">All 57 cards, from 30,000 simulated Hand of 3 games with the three preset decks and 100,000 games with random legal custom decks. Click any column to sort.</p>
+  </header>
+
+  <section>
+    <h2>What stands out</h2>
+    <div class="finds">
+      <div class="find"><b>Torbjörn and Juno lead</b><p>Torbjörn decks win 54%, Juno decks 53.5%. Juno now buffs only the deck, which barely changed her: the Reserve part was small.</p></div>
+      <div class="find"><b>Soldier, Orisa, Pharah, Reaper</b><p>The next tier, at 52–53%. Mauga at 6 Power fell to about average (49%), and Emre at 3 to about 52%.</p></div>
+      <div class="find"><b>D.Mon Mech, Tracer, Anran are weakest</b><p>Decks with them win 47%. D.Mon fights at 6 without Baby D.Mon, and the AI almost never plays Baby D.Mon first.</p></div>
+      <div class="find"><b>Biggest synergy swings</b><p>Sojourn (4% to 95%), D.Va Mech, D.Mon Mech, Ashe, Ramattra, Freja and Widowmaker are weak alone and very strong once set up.</p></div>
+      <div class="find"><b>Hazard is underplayed</b><p>He wins 81% of the battles he is in, but the AI plays him only 11% of the time he is in hand, so decks with him only win 48%.</p></div>
+      <div class="find"><b>Roadhog and Kiriko now average</b><p>At 10 Power Roadhog wins 71% of his battles even after paying for his hook. Kiriko at 6 is played twice as often. Both sit at 50%.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How to read it</h2>
+    <div class="legend">
+      <div><b>Play rate</b> is how often the AI plays the card when it has it in hand.</div>
+      <div><b>Win rate</b> is battles won when the card is played, in real games.</div>
+      <div><b>Vacuum</b> is a one-on-one against every hero with nothing set up: no Reserve, no partners, Payload in the middle.</div>
+      <div><b>Synergy</b> is the same one-on-one with the card's best set-up, named under the number.</div>
+      <div><b>Deck impact</b> is how often a random custom deck containing the card wins the game. 50% is average.</div>
+      <div><b>Tier</b> comes from deck impact, because it also counts after-battle abilities that win later rounds.</div>
+    </div>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <div class="tools">
+      <button class="chip" data-role="all" aria-pressed="true">All</button>
+      <button class="chip" data-role="tank" aria-pressed="false">Tank</button>
+      <button class="chip" data-role="damage" aria-pressed="false">Damage</button>
+      <button class="chip" data-role="support" aria-pressed="false">Support</button>
+      <input id="q" type="search" placeholder="Search heroes" aria-label="Search heroes">
+      <span class="count" id="count"></span>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr>
+          <th><button data-k="n">Hero</button></th>
+          <th><button data-k="r">Role</button></th>
+          <th><button data-k="p">Power</button></th>
+          <th><button data-k="dk">Deck</button></th>
+          <th><button data-k="pick">Play rate</button></th>
+          <th><button data-k="wr">Win rate</button></th>
+          <th><button data-k="vac">Vacuum</button></th>
+          <th><button data-k="syn">Synergy</button></th>
+          <th><button data-k="imp" data-dir="desc">Deck impact</button></th>
+          <th><button data-k="tier">Tier</button></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="foot">Simulated with the game's own AI, so play rate reflects how the AI chooses cards and a human may play some cards better. Vacuum and synergy only count the battle itself, so cards whose value comes after the battle (Mercy, Juno, Zenyatta, Brigitte, Lúcio) look low there. Numbers are from the current build: Ramattra 3, Juno 5, Kiriko 6, Roadhog 10, Torbjörn 7, Brigitte and Jetpack Cat swapped, Mauga 6, Emre 3, Juno deck only, Hazard 8 Power with −1 per Damage hero from both sides, Anran discards the strongest Reserve card, Tracer 4 with hand +2 recall. Baby D.Mon is never played by the AI, so its win rate is blank.</p>
+</div>
+
+<script>
+const DATA=[{"id": "reinhardt", "n": "Reinhardt", "r": "tank", "p": 7, "dk": "Heroes", "an": "Barrier Field", "at": "If he loses while you’re winning, the robot stays.", "c": "#c3ccd4", "pick": 89, "wr": 59, "vac": 78, "syn": 78, "sf": "", "imp": 52.1}, {"id": "winston", "n": "Winston", "r": "tank", "p": 7, "dk": "Heroes", "an": "Jump Pack", "at": "From Reserve: immune to enemy abilities.", "c": "#9fb6dc", "pick": 89, "wr": 61, "vac": 78, "syn": 84, "sf": "From Reserve", "imp": 51.6}, {"id": "dva_baby", "n": "Baby D.Va", "r": "tank", "p": 1, "dk": "Heroes", "an": "Call Mech", "at": "Draw D.Va Mech.", "c": "#ffb3dc", "pick": 1, "wr": 24, "vac": 7, "syn": 7, "sf": "", "imp": 49.3}, {"id": "dva", "n": "D.Va Mech", "r": "tank", "p": 5, "dk": "Heroes", "an": "Mech Up", "at": "Double Power if Baby D.Va was played.", "c": "#ff8cc6", "pick": 26, "wr": 36, "vac": 36, "syn": 95, "sf": "Partner played", "imp": 48.1}, {"id": "orisa", "n": "Orisa", "r": "tank", "p": 8, "dk": "Heroes", "an": "No ability", "at": "No tricks, just Power.", "c": "#a9d47a", "pick": 98, "wr": 78, "vac": 88, "syn": 88, "sf": "", "imp": 53.5}, {"id": "doomfist", "n": "Doomfist", "r": "tank", "p": 7, "dk": "Strike Force", "an": "Rocket Punch", "at": "After battle: swap Reserves.", "c": "#d9b25c", "pick": 86, "wr": 51, "vac": 78, "syn": 78, "sf": "", "imp": 51.5}, {"id": "roadhog", "n": "Roadhog", "r": "tank", "p": 10, "dk": "Strike Force", "an": "Chain Hook", "at": "Discard a random enemy Reserve card. He loses half its Power.", "c": "#b4a274", "pick": 99, "wr": 71, "vac": 95, "syn": 95, "sf": "", "imp": 51.0}, {"id": "zarya", "n": "Zarya", "r": "tank", "p": 5, "dk": "Strike Force", "an": "Particle Barrier", "at": "Debuffs on her become buffs.", "c": "#ff8ad8", "pick": 27, "wr": 25, "vac": 42, "syn": 42, "sf": "", "imp": 48.5}, {"id": "junkerqueen", "n": "Junker Queen", "r": "tank", "p": 6, "dk": "Strike Force", "an": "Rampage", "at": "Both sides discard a random Reserve card.", "c": "#e2b46f", "pick": 57, "wr": 29, "vac": 56, "syn": 56, "sf": "", "imp": 49.3}, {"id": "wreckingball", "n": "Wrecking Ball", "r": "tank", "p": 8, "dk": "Strike Force", "an": "Grappling Claw", "at": "−1 per step the robot is from the middle.", "c": "#e9a24b", "pick": 73, "wr": 60, "vac": 88, "syn": 88, "sf": "", "imp": 52.0}, {"id": "sigma", "n": "Sigma", "r": "tank", "p": 6, "dk": "Tactical", "an": "Gravitic Flux", "at": "After battle: robot 1 step to the middle.", "c": "#a7b0d6", "pick": 59, "wr": 28, "vac": 57, "syn": 57, "sf": "", "imp": 49.3}, {"id": "ramattra", "n": "Ramattra", "r": "tank", "p": 3, "dk": "Tactical", "an": "Nemesis Form", "at": "+1 per Support in your discard.", "c": "#9b7fe0", "pick": 23, "wr": 35, "vac": 18, "syn": 87, "sf": "Full discard", "imp": 49.9}, {"id": "mauga", "n": "Mauga", "r": "tank", "p": 6, "dk": "Tactical", "an": "Overrun", "at": "Win: push 2. Lose: enemy pushes 2.", "c": "#ff7a45", "pick": 61, "wr": 29, "vac": 56, "syn": 56, "sf": "", "imp": 49.0}, {"id": "domina", "n": "Domina", "r": "tank", "p": 5, "dk": "Strike Force", "an": "Barrier Array", "at": "Swap Power with the enemy.", "c": "#7ad9e6", "pick": 18, "wr": 56, "vac": 57, "syn": 57, "sf": "", "imp": 50.2}, {"id": "dmon_baby", "n": "Baby D.Mon", "r": "tank", "p": 2, "dk": "Heroes", "an": "Ready Up", "at": "Powers up D.Mon Mech.", "c": "#9fd0ff", "pick": 5, "wr": 15, "vac": 12, "syn": 12, "sf": "", "imp": 48.7}, {"id": "dmon", "n": "D.Mon Mech", "r": "tank", "p": 10, "dk": "Heroes", "an": "Limit Break", "at": "−4 unless Baby D.Mon was played.", "c": "#7fb2ff", "pick": 53, "wr": 48, "vac": 59, "syn": 96, "sf": "Partner played", "imp": 46.5}, {"id": "hazard", "n": "Hazard", "r": "tank", "p": 9, "dk": "Tactical", "an": "Spike Guard", "at": "−1 per Damage hero played by either side (−6 at most).", "c": "#c58cf0", "pick": 10, "wr": 80, "vac": 93, "syn": 93, "sf": "", "imp": 47.6}, {"id": "soldier", "n": "Soldier: 76", "r": "damage", "p": 7, "dk": "Heroes", "an": "No ability", "at": "No tricks, just Power.", "c": "#5383cc", "pick": 89, "wr": 53, "vac": 79, "syn": 79, "sf": "", "imp": 51.3}, {"id": "cassidy", "n": "Cassidy", "r": "damage", "p": 7, "dk": "Heroes", "an": "Deadeye", "at": "Discard enemy’s top card. Damage: +2, else −2.", "c": "#d27c45", "pick": 68, "wr": 46, "vac": 59, "syn": 60, "sf": "From Reserve", "imp": 49.2}, {"id": "genji", "n": "Genji", "r": "damage", "p": 6, "dk": "Strike Force", "an": "Deflect", "at": "Debuffs on him hit the enemy.", "c": "#9af585", "pick": 56, "wr": 30, "vac": 59, "syn": 59, "sf": "", "imp": 48.8}, {"id": "hanzo", "n": "Hanzo", "r": "damage", "p": 6, "dk": "Tactical", "an": "Sonic Arrow", "at": "Hack an enemy Support. From Reserve: any hero.", "c": "#7fb4ff", "pick": 49, "wr": 32, "vac": 56, "syn": 62, "sf": "From Reserve", "imp": 49.5}, {"id": "tracer", "n": "Tracer", "r": "damage", "p": 4, "dk": "Heroes", "an": "Recall", "at": "If she loses: back to hand. She and your hand +2.", "c": "#ffb34f", "pick": 51, "wr": 23, "vac": 26, "syn": 26, "sf": "", "imp": 48.4}, {"id": "widowmaker", "n": "Widowmaker", "r": "damage", "p": 3, "dk": "Tactical", "an": "Headshot", "at": "From Reserve: enemy −4. Unblockable.", "c": "#b08ad8", "pick": 37, "wr": 51, "vac": 18, "syn": 79, "sf": "From Reserve", "imp": 50.8}, {"id": "reaper", "n": "Reaper", "r": "damage", "p": 6, "dk": "Strike Force", "an": "Death Blossom", "at": "Enemy Tank −2.", "c": "#7a2e40", "pick": 51, "wr": 39, "vac": 66, "syn": 66, "sf": "", "imp": 49.6}, {"id": "pharah", "n": "Pharah", "r": "damage", "p": 6, "dk": "Heroes", "an": "Barrage", "at": "Played a Tank, Damage and Support: enemy −4.", "c": "#5698e6", "pick": 58, "wr": 54, "vac": 55, "syn": 92, "sf": "Partner played", "imp": 50.7}, {"id": "junkrat", "n": "Junkrat", "r": "damage", "p": 5, "dk": "Strike Force", "an": "RIP-Tire", "at": "Power is random, 1 to 10.", "c": "#f6d462", "pick": 21, "wr": 39, "vac": 52, "syn": 52, "sf": "", "imp": 48.9}, {"id": "sojourn", "n": "Sojourn", "r": "damage", "p": 0, "dk": "Strike Force", "an": "Railgun", "at": "+2 Power per round in Reserve, up to 10.", "c": "#ff7d70", "pick": 14, "wr": 59, "vac": 4, "syn": 94, "sf": "From Reserve", "imp": 49.3}, {"id": "ashe", "n": "Ashe", "r": "damage", "p": 4, "dk": "Strike Force", "an": "The Viper", "at": "Discard a card from your hand (you pick).", "c": "#d9d3dd", "pick": 15, "wr": 73, "vac": 26, "syn": 26, "sf": "", "imp": 48.9}, {"id": "bob", "n": "B.O.B.", "r": "damage", "p": 6, "dk": "Strike Force", "an": "Get Him, B.O.B.!", "at": "If he is discarded, your hero in play gains his Power.", "c": "#b9a58a", "pick": 9, "wr": 48, "vac": 55, "syn": 55, "sf": "", "imp": 49.8}, {"id": "mei", "n": "Mei", "r": "damage", "p": 7, "dk": "Tactical", "an": "Cryo-Freeze", "at": "No Power changes in this battle. Buffs from hand stay.", "c": "#a6e4ff", "pick": 94, "wr": 65, "vac": 82, "syn": 82, "sf": "", "imp": 52.3}, {"id": "symmetra", "n": "Symmetra", "r": "damage", "p": 6, "dk": "Tactical", "an": "Teleporter", "at": "Win and loss swap. Ties stay.", "c": "#86e8ff", "pick": 33, "wr": 42, "vac": 44, "syn": 44, "sf": "", "imp": 49.3}, {"id": "echo", "n": "Echo", "r": "damage", "p": 6, "dk": "Tactical", "an": "Duplicate", "at": "Copies the enemy’s ability.", "c": "#a9f3ff", "pick": 79, "wr": 31, "vac": 62, "syn": 63, "sf": "Partner played", "imp": 50.6}, {"id": "bastion", "n": "Bastion", "r": "damage", "p": 1, "dk": "Tactical", "an": "Artillery", "at": "Win this battle, win the game.", "c": "#9db58a", "pick": 2, "wr": 7, "vac": 7, "syn": 7, "sf": "", "imp": 48.6}, {"id": "torbjorn", "n": "Torbjörn", "r": "damage", "p": 6, "dk": "Heroes", "an": "Deploy Turret", "at": "Next enemy hero −2 (−3 from Reserve). Unblockable.", "c": "#e08a5a", "pick": 67, "wr": 22, "vac": 56, "syn": 56, "sf": "", "imp": 51.0}, {"id": "venture", "n": "Venture", "r": "damage", "p": 5, "dk": "Tactical", "an": "Drill Dash", "at": "Enemy −2. If they win, next enemy −2.", "c": "#d6b77c", "pick": 94, "wr": 48, "vac": 76, "syn": 76, "sf": "", "imp": 52.2}, {"id": "freja", "n": "Freja", "r": "damage", "p": 5, "dk": "Strike Force", "an": "Take Aim", "at": "+3 if you’re losing.", "c": "#7fd0c8", "pick": 30, "wr": 62, "vac": 36, "syn": 88, "sf": "When losing", "imp": 50.0}, {"id": "vendetta", "n": "Vendetta", "r": "damage", "p": 8, "dk": "Tactical", "an": "Wrath", "at": "Debuffs on her hit double.", "c": "#e25a5a", "pick": 92, "wr": 68, "vac": 85, "syn": 85, "sf": "", "imp": 51.8}, {"id": "emre", "n": "Emre", "r": "damage", "p": 3, "dk": "Strike Force", "an": "Siphon Blaster", "at": "Steals 2 Power.", "c": "#8fb0c9", "pick": 66, "wr": 47, "vac": 74, "syn": 74, "sf": "", "imp": 51.6}, {"id": "anran", "n": "Anran", "r": "damage", "p": 6, "dk": "Strike Force", "an": "Fan the Flames", "at": "Discard a random enemy hand card. Its Power hits their deck as random −1s.", "c": "#ff8a4a", "pick": 67, "wr": 20, "vac": 55, "syn": 55, "sf": "", "imp": 49.7}, {"id": "sierra", "n": "Sierra", "r": "damage", "p": 6, "dk": "Strike Force", "an": "Tracker Shot", "at": "Wins all ties.", "c": "#6fd6a8", "pick": 56, "wr": 51, "vac": 72, "syn": 72, "sf": "", "imp": 50.1}, {"id": "shion", "n": "Shion", "r": "damage", "p": 5, "dk": "Heroes", "an": "Satsuriku Spree", "at": "+3 vs Damage heroes.", "c": "#ff6fa8", "pick": 49, "wr": 37, "vac": 57, "syn": 57, "sf": "", "imp": 49.1}, {"id": "mercy", "n": "Mercy", "r": "support", "p": 6, "dk": "Heroes", "an": "Resurrect", "at": "After battle: best discarded hero to empty Reserve.", "c": "#ffe9a3", "pick": 74, "wr": 27, "vac": 57, "syn": 57, "sf": "", "imp": 50.2}, {"id": "sombra", "n": "Sombra", "r": "support", "p": 4, "dk": "Tactical", "an": "Hack", "at": "Hack the enemy now and next battle. Unblockable.", "c": "#b885ff", "pick": 26, "wr": 15, "vac": 25, "syn": 25, "sf": "", "imp": 49.1}, {"id": "brigitte", "n": "Brigitte", "r": "support", "p": 6, "dk": "Heroes", "an": "Catnapper", "at": "When losing: your next win pushes 2.", "c": "#f2b552", "pick": 74, "wr": 26, "vac": 57, "syn": 57, "sf": "", "imp": 49.7}, {"id": "ana", "n": "Ana", "r": "support", "p": 2, "dk": "Heroes", "an": "Biotic Grenade", "at": "Next 2 enemies −2 and can’t gain Power.", "c": "#76a4ce", "pick": 5, "wr": 10, "vac": 12, "syn": 12, "sf": "", "imp": 49.0}, {"id": "lucio", "n": "Lúcio", "r": "support", "p": 5, "dk": "Heroes", "an": "Speed Boost", "at": "Your next 3 Tanks +2.", "c": "#9be35f", "pick": 47, "wr": 17, "vac": 37, "syn": 37, "sf": "", "imp": 50.6}, {"id": "illari", "n": "Illari", "r": "support", "p": 2, "dk": "Heroes", "an": "Healing Pylon", "at": "Your next 3 heroes +2.", "c": "#ffcf5c", "pick": 9, "wr": 7, "vac": 12, "syn": 12, "sf": "", "imp": 49.5}, {"id": "zenyatta", "n": "Zenyatta", "r": "support", "p": 3, "dk": "Tactical", "an": "Discord Orb", "at": "After battle: every hero in the enemy deck −1.", "c": "#f5d877", "pick": 11, "wr": 10, "vac": 18, "syn": 18, "sf": "", "imp": 50.2}, {"id": "moira", "n": "Moira", "r": "support", "p": 6, "dk": "Strike Force", "an": "Biotic Grasp", "at": "After battle: drain 3 from enemy Reserve to yours.", "c": "#c86bff", "pick": 70, "wr": 23, "vac": 57, "syn": 57, "sf": "", "imp": 52.5}, {"id": "baptiste", "n": "Baptiste", "r": "support", "p": 5, "dk": "Tactical", "an": "Amplification Matrix", "at": "After battle: hack 2 of your cards for good, then no-ability heroes +3.", "c": "#63d9ab", "pick": 41, "wr": 16, "vac": 36, "syn": 36, "sf": "", "imp": 50.0}, {"id": "kiriko", "n": "Kiriko", "r": "support", "p": 6, "dk": "Tactical", "an": "Protection Suzu", "at": "Next 2 heroes: no debuffs or hacks. Clears debuffs in hand.", "c": "#ff8f8f", "pick": 70, "wr": 26, "vac": 57, "syn": 57, "sf": "", "imp": 50.3}, {"id": "lifeweaver", "n": "Lifeweaver", "r": "support", "p": 6, "dk": "Tactical", "an": "Life Grip", "at": "Until you win, losing by 2 or less is a draw.", "c": "#ffc2e0", "pick": 69, "wr": 27, "vac": 57, "syn": 57, "sf": "", "imp": 52.3}, {"id": "juno", "n": "Juno", "r": "support", "p": 5, "dk": "Strike Force", "an": "Orbital Ray", "at": "After battle: your deck +1.", "c": "#ff9ee8", "pick": 33, "wr": 13, "vac": 37, "syn": 37, "sf": "", "imp": 53.7}, {"id": "mizuki", "n": "Mizuki", "r": "support", "p": 3, "dk": "Tactical", "an": "Katashiro Return", "at": "He and next hero +1 per robot step on your side.", "c": "#c7a0ff", "pick": 11, "wr": 15, "vac": 25, "syn": 35, "sf": "When losing", "imp": 48.6}, {"id": "jetpackcat", "n": "Jetpack Cat", "r": "support", "p": 3, "dk": "Heroes", "an": "Rally", "at": "After battle: pick 1 of 3 deck cards. To Reserve, +3.", "c": "#ffd36b", "pick": 18, "wr": 9, "vac": 18, "syn": 18, "sf": "", "imp": 49.1}, {"id": "doctrine", "n": "Doctrine", "r": "support", "p": 6, "dk": "Tactical", "an": "Deliverance", "at": "After battle: enemy hand −1, your hand +1.", "c": "#c0303f", "pick": 71, "wr": 26, "vac": 57, "syn": 57, "sf": "", "imp": 51.8}, {"id": "wuyang", "n": "Wuyang", "r": "support", "p": 4, "dk": "Strike Force", "an": "Xuanwu Staff", "at": "After battle: your hand +1 per card you discarded with abilities. Can’t be discarded.", "c": "#7fd8ff", "pick": 7, "wr": 20, "vac": 26, "syn": 26, "sf": "", "imp": 47.5}];
+const tierOf=x=>x>=53?'S':x>=51.5?'A':x>=50?'B':x>=48.5?'C':'D';
+const TR={S:5,A:4,B:3,C:2,D:1};
+DATA.forEach(d=>d.tier=tierOf(d.imp));
+let sort={k:'imp',dir:'desc'},role='all',q='';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function pct(v){ if(v==null) return '<span class="pct"><span>–</span><i></i></span>';
+  return `<span class="pct"><span>${v}%</span><i><em data-w="${v}"></em></i></span>`; }
+function render(){
+  const val=(d,k)=>k==='tier'?TR[d.tier]*100+d.imp:d[k];
+  const rows=DATA.filter(d=>(role==='all'||d.r===role)&&(!q||d.n.toLowerCase().includes(q)||d.an.toLowerCase().includes(q)))
+    .sort((a,b)=>{ let x=val(a,sort.k),y=val(b,sort.k); if(x==null) x=-1; if(y==null) y=-1;
+      const c=typeof x==='string'?x.localeCompare(y):x-y; return (sort.dir==='asc'?c:-c)||a.n.localeCompare(b.n); });
+  $('#rows').innerHTML=rows.map(d=>`<tr>
+    <td><div class="hero"><span class="dot" data-c="${esc(d.c)}"></span><div><div class="nm">${esc(d.n)}</div><div class="ab">${esc(d.an)}: ${esc(d.at)}</div></div></div></td>
+    <td><span class="role ${d.r}">${d.r}</span></td>
+    <td class="pw">${d.p}</td>
+    <td class="deck">${esc(d.dk)}</td>
+    <td>${pct(d.pick)}</td><td>${pct(d.wr)}</td><td>${pct(d.vac)}</td>
+    <td class="syn">${pct(d.syn)}${d.sf?`<small>${esc(d.sf)}</small>`:''}</td>
+    <td class="imp ${d.imp>=51.5?'up':d.imp<48.5?'dn':''}">${d.imp.toFixed(1)}%</td>
+    <td><span class="tier ${d.tier}">${d.tier}</span></td></tr>`).join('');
+  document.querySelectorAll('#rows em').forEach(e=>e.style.setProperty('width',e.dataset.w+'%'));
+  document.querySelectorAll('#rows .dot').forEach(e=>e.style.setProperty('background',e.dataset.c));
+  $('#count').textContent=`${rows.length} cards`;
+}
+document.querySelectorAll('th button').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.k; sort={k,dir:sort.k===k?(sort.dir==='desc'?'asc':'desc'):(['n','r','dk'].includes(k)?'asc':'desc')};
+  document.querySelectorAll('th button').forEach(x=>x.removeAttribute('data-dir')); b.dataset.dir=sort.dir; render(); }));
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{ role=c.dataset.role;
+  document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c)); render(); }));
+$('#q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase(); render();});
+render();
+</script>
