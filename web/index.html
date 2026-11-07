@@ -1299,8 +1299,9 @@ button, .card, .slot { touch-action: manipulation; }
           <h3>Control mode</h3>
           <ul>
             <li>No robot. The match is best of 3 rounds: win 2 rounds to win.</li>
-            <li>Each round is 5 turns. Win 3 turns to take the round.</li>
-            <li>If nobody wins 3 turns, the round is a draw and you play another round (5 rounds at most).</li>
+            <li>Each round lasts up to 5 turns. Win 3 turns and the round ends early in your favour.</li>
+            <li>After 5 turns, whoever won more turns takes the round. An even score is a drawn round.</li>
+            <li>There are 3 rounds at most. If nobody has won 2 rounds after round 3, the match is a draw.</li>
             <li>It plays like Push: 3 cards in hand, play 1 each turn.</li>
           </ul>
         </div>
@@ -2544,7 +2545,7 @@ document.addEventListener('pointerdown', () => { if (Music.want && !Music.src &&
 var PLAY_MODE = 'push'; // 'control' when the Control card was picked
 const MODES = [
   { id: 'standard', name: 'Push', art: 'reinhardt', text: 'Hold 3 cards. Pick your play each round and push the robot home.', tag: 'Hand of 3 · Pick a deck' },
-  { id: 'control', name: 'Control', art: 'tracer', text: 'Best of 3 rounds. Win 3 of 5 turns to take a round.', tag: 'Hand of 3 · Pick a deck', cls: 'ctrl', badge: 'New' },
+  { id: 'control', name: 'Control', art: 'tracer', text: '3 rounds of up to 5 turns. First to win 2 rounds wins.', tag: 'Hand of 3 · Pick a deck', cls: 'ctrl', badge: 'New' },
   { id: 'quick', name: 'Quick Play', art: 'mei', text: 'Draw 1 card a round. Play it, or save it in your one Reserve slot.', tag: '1 card · Pick a deck', cls: 'blue' },
   { id: 'mystery', name: 'Mystery Hero', art: 'zenyatta', text: 'No deck. Draw random heroes, never the same one twice. Up to 20 rounds.', tag: 'Hand of 3 · Random draws', cls: 'myst', badge: 'New', glyph: '?' },
 ];
@@ -3576,11 +3577,11 @@ const MODE_DESC = {
   hand: 'Push: keep 3 cards in hand and play 1 each round. A card that stays in your hand for a round becomes your Reserve.',
   classic: 'Quick Play: draw 1 card each round. Play it, or save it in your single Reserve slot.',
 };
-MODE_DESC.control = 'Control: best of 3 rounds. Each round is 5 turns, and the first to win 3 turns takes the round. Win 2 rounds to win the match.';
+MODE_DESC.control = 'Control: 3 rounds, up to 5 turns each. Win more turns to take a round (3 wins ends it early). First to win 2 rounds wins the match.';
 function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[PLAY_MODE === 'control' ? 'control' : settings.mode] || MODE_DESC.hand; }
 
-/* ---------- Control mode: best of 3 rounds, 5 turns each. 3 turn wins take a round; otherwise the round is a draw. ---------- */
-const CTRL_TURNS = 5, CTRL_WIN = 3, CTRL_NEED = 2, CTRL_ROUNDS = 5; // draws add rounds, up to 5 in total
+/* ---------- Control mode: 3 rounds of up to 5 turns. 3 turn wins end a round early; after 5 turns more turn wins takes it, equal is a draw. First to 2 rounds wins. ---------- */
+const CTRL_TURNS = 5, CTRL_WIN = 3, CTRL_NEED = 2, CTRL_ROUNDS = 3; // 3 rounds at most
 function ctrlBoard() {
   const C = G && G.ctrl, box = $('#ctrl-score'), lab = $('#ctrl-label');
   if (!box || !lab) return;
@@ -3597,7 +3598,7 @@ async function ctrlAfterTurn() {
   C.turn++;
   const done = C.w.p >= CTRL_WIN || C.w.e >= CTRL_WIN || C.turn >= CTRL_TURNS;
   if (!done) { ctrlBoard(); await wait(250); return; }
-  const who = C.w.p >= CTRL_WIN ? 'p' : C.w.e >= CTRL_WIN ? 'e' : null;
+  const who = C.w.p > C.w.e ? 'p' : C.w.e > C.w.p ? 'e' : null;
   if (who) C.rw[who]++;
   C.log.push(who || 'draw');
   ctrlBoard();
@@ -3820,7 +3821,7 @@ async function endGame(result, timeUp) {
   const end = $('#endscreen');
   const deck = G.online ? null : getDeck(G.p.deckId);
   const title = { win: 'Victory', lose: 'Defeat', draw: 'Draw' }[result];
-  const line = G.ctrl ? (result === 'draw' ? `${G.ctrl.log.length} rounds played and nobody won 2. Rounds ${G.ctrl.rw.p} to ${G.ctrl.rw.e}.` : `${won ? 'You' : 'The enemy'} won ${G.ctrl.rw[won ? 'p' : 'e']} rounds to ${G.ctrl.rw[won ? 'e' : 'p']}.`) : timeUp
+  const line = G.ctrl ? (result === 'draw' ? `3 rounds played and nobody won 2. Rounds ${G.ctrl.rw.p} to ${G.ctrl.rw.e}.` : `${won ? 'You' : 'The enemy'} won ${G.ctrl.rw[won ? 'p' : 'e']} rounds to ${G.ctrl.rw[won ? 'e' : 'p']}.`) : timeUp
     ? (result === 'draw' ? `Round ${G.maxRounds} is over and the robot sits in the middle.` : `Round ${G.maxRounds} is over. The robot ended on ${won ? 'the enemy' : 'your'} side.`)
     : `${won ? 'Robot reached the enemy base' : G.online ? 'Your friend reached your base' : 'The enemy reached your base'} in ${G.round} round${G.round === 1 ? '' : 's'}.`;
   end.innerHTML = `<div class="end ${result}">

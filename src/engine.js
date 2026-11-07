@@ -77,7 +77,7 @@ const HEROES = Object.fromEntries([
   H('mizuki', 'Mizuki', 'support', 3, '#c7a0ff', '#2e1d58', 'Katashiro Return', 'He and next hero +1 per robot step on your side.', { type: 'next', give: 'boost', amount: 1, perBehind: true, self: true }),
   H('jetpackcat', 'Jetpack Cat', 'support', 3, '#ffd36b', '#7a4a10', 'Rally', 'After battle: pick 1 of 3 deck cards. To Reserve, +3.', { type: 'tutor', count: 3, amount: 3 }),
   H('doctrine', 'Doctrine', 'support', 6, '#c0303f', '#1a0a12', 'Deliverance', 'After battle: enemy hand −1, your hand +1.', { type: 'handSwing', amount: 1 }),
-  H('wuyang', 'Wuyang', 'support', 4, '#7fd8ff', '#14466b', 'Xuanwu Staff', 'After battle: your hand +1 per card you discarded with abilities. Can’t be discarded.', { type: 'handPerDiscard' }),
+  H('wuyang', 'Wuyang', 'support', 4, '#7fd8ff', '#14466b', 'Xuanwu Staff', 'In hand: when you discard a card, your top deck card +2. Can’t be discarded.', { type: 'discardWatch', mode: 'top', amount: 2 }),
 ]);
 // Sojourn starts at 0 in Hand of 3 but 4 in Classic, and counts as 4 toward a custom deck's Power limit.
 Object.assign(HEROES.sojourn, { modePower: { hand: 0, classic: 4 }, deckPower: 4 });
@@ -462,7 +462,6 @@ function resolve(input, rng = Math.random) {
     if (fx.type === 'weakenDeck') after.push({ kind: 'weakenDeck', side: s, of: t, count: fx.count, all: !!fx.all, amount: fx.amount, by: S[s].hero.name, order: 5 });
     if (fx.type === 'callMech') after.push({ kind: 'callMech', side: s, id: fx.id, by: S[s].hero.name, order: 4 });
     if (fx.type === 'tutor') after.push({ kind: 'tutor', side: s, count: fx.count, amount: fx.amount, by: S[s].hero.name, order: 7 });
-    if (fx.type === 'handPerDiscard') { const n = S[s].ctx.myDiscards || 0; if (n) after.push({ kind: 'buffHand', side: s, amount: n, by: S[s].hero.name, order: 5 }); }
     if (fx.type === 'swapReserves') after.push({ kind: 'swapReserves', side: s, by: S[s].hero.name, order: 3 });
     if (fx.type === 'resurrect') after.push({ kind: 'resurrect', side: s, by: S[s].hero.name, order: 4 });
     if (fx.type === 'buffReserve') after.push({ kind: 'buffReserve', side: s, amount: fx.amount, by: S[s].hero.name, order: 5 });
@@ -517,6 +516,14 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
     P.turret = 0; P.hackedNext = false; P.choice = null;
   }
   const whose = s => (s === mine ? 'your' : 'the enemy’s');
+  // Wuyang · Xuanwu Staff: while he waits in hand, each card your abilities discard powers up the top of your deck (or him)
+  const wuyang = s => {
+    const P = sides[s], w = (P.hand || heldCards(P)).find(c => c.id === 'wuyang' && !c.silenced), fx = HEROES.wuyang.fx;
+    if (!w) return;
+    if (fx.mode === 'self') { addBonus(w, fx.amount, 'Wuyang'); msgs.push({ side: s, of: s, text: 'Wuyang · Xuanwu Staff: he gains +' + fx.amount + ' in ' + whose(s) + ' hand.' }); return; }
+    const top = P.deck[P.deck.length - 1];
+    if (top) { addBonus(top, fx.amount, 'Wuyang'); msgs.push({ side: s, of: s, text: 'Wuyang · Xuanwu Staff: the top card of ' + whose(s) + ' deck gets +' + fx.amount + '.' }); }
+  };
   for (const a of r.after) {
     const me = sides[a.side];
     if (a.kind === 'discard') {
@@ -527,6 +534,7 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
       takeCard(S, c); if (!a.quiet) c.burned = true; S.discard.push(c);
       if (!a.quiet) { sides.p.discards = (sides.p.discards || 0) + 1; sides.e.discards = (sides.e.discards || 0) + 1; me.myDiscards = (me.myDiscards || 0) + 1; }
       msgs.push({ side: a.side, of: a.of, text: a.quiet ? 'B.O.B. heads back to the discard pile.' : a.by + ' discards ' + (a.random || a.uid ? HEROES[c.id].name + ' from ' + whose(a.of) + (S.hand && !c.held ? ' hand.' : ' Reserve.') : whose(a.of) + ' Reserve card (' + HEROES[c.id].name + ').') });
+      if (!a.quiet) { wuyang(a.side); if (HEROES.wuyang.fx.any) wuyang(a.side === 'p' ? 'e' : 'p'); }
     } else if (a.kind === 'swapReserves') {
       const P = sides.p, E = sides.e, x = mainReserve(P), y = mainReserve(E);
       if (x || y) {
@@ -590,7 +598,7 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
     } else if (a.kind === 'mill') {
       const foe = sides[a.of], c = foe.deck.length && !UNDISCARDABLE(foe.deck[foe.deck.length - 1].id) ? foe.deck.pop() : null;
       if (c) { c.burned = true; foe.discard.push(c); sides.p.discards = (sides.p.discards || 0) + 1; sides.e.discards = (sides.e.discards || 0) + 1; me.myDiscards = (me.myDiscards || 0) + 1;
-        msgs.push({ side: a.side, of: a.of, text: a.by + ' discards ' + HEROES[c.id].name + ' from the top of ' + whose(a.of) + ' deck.' }); }
+        msgs.push({ side: a.side, of: a.of, text: a.by + ' discards ' + HEROES[c.id].name + ' from the top of ' + whose(a.of) + ' deck.' }); wuyang(a.side); if (HEROES.wuyang.fx.any) wuyang(a.side === 'p' ? 'e' : 'p'); }
     } else if (a.kind === 'weakenDeck') {
       const F = sides[a.of], pool = F.deck.slice(); let n = 0;
       if (a.scatter) {
