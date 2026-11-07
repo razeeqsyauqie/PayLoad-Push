@@ -3572,6 +3572,7 @@ function askHand() {
       Sfx.init(); Sfx.click();
       els.forEach(e => { if (e) { e.classList.remove('clickable', 'peek'); e.onclick = null; } });
       document.removeEventListener('keydown', onKey);
+      document.removeEventListener('click', unpeek, true);
       clearSynergies(); $('#actions').innerHTML = '';
       resolve(card);
     };
@@ -3590,6 +3591,15 @@ function askHand() {
         setHint('Tap ' + HEROES[c.id].name + ' again to play it.');
       };
     });
+    // tapping anywhere outside the lifted card puts it back
+    const unpeek = e => {
+      const up = els.find(x => x && x.classList.contains('peek'));
+      if (!up || up.contains(e.target)) return;
+      up.classList.remove('peek');
+      setHint('Tap a hero to see it, then tap again to play it.');
+      if (!els.some(x => x && x !== up && x.contains(e.target))) { e.stopPropagation(); e.preventDefault(); }
+    };
+    document.addEventListener('click', unpeek, true);
     setHint(TOUCH() ? 'Tap a hero to see it, then tap again to play it.' : 'Tap a hero to play it. Cards that stay in your hand for a round become your Reserve.');
     const onKey = e => { const i = +e.key - 1; if (i >= 0 && i < 3 && P.slots[i]) finish(P.slots[i]); };
     document.addEventListener('keydown', onKey);
