@@ -1385,7 +1385,7 @@ async function showEvent(ev, els, base) {
   Sfx.ability(ev.kind);
   const target = ev.target ? els[ev.target] : els[ev.side];
   if (ev.kind === 'hack') { els[ev.target].classList.add('hacked'); }
-  if (ev.title.startsWith('B.O.B.')) { const b = ev.side === 'p' ? $$('#p-hand .card, #p-reserve .card, #p-hand3 .card').find(c => c.dataset.hero === 'bob') : $('#e-reserve .card, #e-hand .card'); if (b) fx(b, 'casting', 900); }
+  if (ev.title.startsWith('B.O.B.')) { const b = ev.side === 'p' ? $$('#p-hand .card, #p-reserve .card, #p-hand3 .card').find(c => c.dataset.hero === 'bob') : $('#e-reserve .card, #e-hand .card'); if (HFX.on()) await HFX.bobJump(b, ev.target ? els[ev.target] : els[ev.side]); else if (b) fx(b, 'casting', 900); }
   if (ev.kind === 'random') {
     // spin the number before landing
     const sp = els[ev.side].querySelector('.power span');

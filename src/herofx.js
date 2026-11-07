@@ -285,5 +285,29 @@ const HFX = (() => {
     if (live(by)) beam(by, from, '#a7a7a7', 4, 500, 0, 'chain');
     card.animate([{ translate: `${a.x - b.x}px ${a.y - b.y}px`, scale: '.45' }, { translate: `${a.x - b.x}px ${a.y - b.y}px`, scale: '.45', offset: .3 }, { translate: '0 0', scale: '1' }], { duration: D(700), easing: 'cubic-bezier(.3,1.3,.5,1)' });
   }
-  return { on, reveal, move, snap, hook, decorate, HAND, PLAY };
+  // B.O.B. (Syauqie: jump from hand to the board, disappear, then the Power adds up). `from` is where B.O.B. sat, `to` the hero he joins.
+  async function bobJump(from, to) {
+    if (!on() || !live(to)) return;
+    const a = live(from) ? mid(from) : { x: innerWidth / 2, y: mid(to).y > innerHeight / 2 ? innerHeight - 60 : 60, w: mid(to).w * .6, h: mid(to).h * .6 }, b = mid(to);
+    const c = cardEl({ id: 'bob', uid: 'bobfx' }); c.classList.add('hx-bob');
+    Object.assign(c.style, { position: 'fixed', left: b.l + 'px', top: b.t + 'px', width: b.w + 'px', height: b.h + 'px', margin: 0, zIndex: 9001, pointerEvents: 'none' });
+    document.body.appendChild(c);
+    if (live(from) && !from.classList.contains('down')) from.style.visibility = 'hidden';
+    const dx = a.x - b.x, dy = a.y - b.y, s0 = Math.max(.35, a.w / b.w), peak = Math.min(a.y, b.y) - b.y - 140;
+    try { Sfx.ability && Sfx.ability('boost'); } catch (e) {}
+    await c.animate([
+      { translate: `${dx}px ${dy}px`, scale: String(s0), rotate: '0deg' },
+      { translate: `${dx * .45}px ${peak}px`, scale: '.85', rotate: '-12deg', offset: .5 },
+      { translate: '0 -6px', scale: '1.05', rotate: '0deg', offset: .9 },
+      { translate: '0 0', scale: '1', rotate: '0deg' }
+    ], { duration: D(800), easing: 'cubic-bezier(.35,.1,.5,1)', fill: 'forwards' }).finished;
+    // landing: the hero card (and its neighbours) take the hit
+    hop([to], 14); ring(to, '#ffb347', 2.2, 700); burst(to, 14, '#ffb347', { dist: 1, size: 6 });
+    await new Promise(r => setTimeout(r, D(250)));
+    // then he's gone, a puff of smoke
+    burst(c, 18, '#cfc6b8', { shape: 'dust', dist: .9, size: 8, dur: 700, spread: true });
+    await c.animate([{ opacity: 1, scale: '1' }, { opacity: 0, scale: '1.25', filter: 'blur(4px)' }], { duration: D(380), easing: 'ease-in', fill: 'forwards' }).finished;
+    c.remove();
+  }
+  return { on, reveal, move, snap, hook, bobJump, decorate, HAND, PLAY };
 })();
