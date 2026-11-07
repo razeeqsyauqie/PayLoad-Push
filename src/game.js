@@ -3,7 +3,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
 /* ---------- Settings ---------- */
-const DEFAULTS = { sound: true, volume: 70, speed: 'normal', length: 3, mode: 'hand', cardStyle: 'full', music: 'inst', menuVoice: 'kiriko', menuCards: ['reinhardt', 'tracer', 'mercy'], gameMusic: 'on', musicVol: 70, sfxVol: 80, voiceVol: 90 };
+const DEFAULTS = { sound: true, volume: 70, speed: 'normal', length: 3, mode: 'hand', cardStyle: 'full', music: 'inst', menuVoice: 'kiriko', menuCards: ['reinhardt', 'tracer', 'mercy'], gameMusic: 'on', musicVol: 70, sfxVol: 80, voiceVol: 90, heroFx: 'on' };
 const settings = (() => {
   try {
     const saved = JSON.parse(localStorage.getItem('pp-settings') || '{}');
@@ -621,6 +621,7 @@ function buildMenus() {
   seg('#set-mode', 'mode', v => v);
   seg('#set-mode2', 'mode', v => v);
   seg('#set-cards', 'cardStyle', v => v);
+  seg('#set-herofx', 'heroFx', v => v);
   seg('#set-music', 'music', v => v);
   seg('#set-menuvoice', 'menuVoice', v => v);
   seg('#set-gamemusic', 'gameMusic', v => v);
@@ -850,7 +851,8 @@ async function revealDiscard(card, s) {
   arena.appendChild(el);
   el.animate([{ transform: 'translate(-50%, -50%) scale(.4) rotate(-8deg)', opacity: 0 }, { transform: 'translate(-50%, -50%) scale(1) rotate(0)', opacity: 1 }], { duration: T(320), easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'forwards' });
   await wait(950);
-  await flyAway(el, rectOf($('#' + s + '-discard')), { dur: 450 });
+  // discarded cards crumble to dust (Syauqie: a universal effect so everyone sees it was discarded)
+  if (HFX.on()) await HFX.snap(el); else await flyAway(el, rectOf($('#' + s + '-discard')), { dur: 450 });
   el.remove();
   renderDiscard(s);
 }
@@ -975,7 +977,7 @@ async function playRound() {
   let pCard, pEl, pFromRes = false, pBlind = false;
   if (choice === 'play') {
     pCard = P.drawn; pEl = pHand; Sfx.place();
-    await fly(pEl, $('#p-slot'));
+    await HFX.move(pEl, $('#p-slot'));
   } else if (choice === 'reserve') {
     P.reserve = P.drawn; Sfx.place();
     await fly(pHand, $('#p-reserve'));
@@ -990,7 +992,7 @@ async function playRound() {
     pCard = P.reserve; P.reserve = null; pFromRes = true; pEl = rEl;
     $('#p-reserve').classList.remove('full');
     Sfx.place();
-    await fly(pEl, $('#p-slot'));
+    await HFX.move(pEl, $('#p-slot'));
     P.deck.unshift(P.drawn); updateCounts();
     flyAway(pHand, rectOf($('#p-pile')), { dur: 360 });
   }
@@ -1040,6 +1042,7 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
   await wait(550);
   Sfx.reveal();
   await wait(450);
+  await HFX.reveal([[pEl, pCard.id, 'p'], [eEl, eCard.id, 'e']]);
 
   // 4. ABILITIES
   const inP = { id: pCard.id, bonus: pCard.bonus, silenced: !!pCard.silenced, ctx: sideCtx('p', { fromReserve: pFromRes, heldRounds: pCard.heldRounds || 0, discardPick: P.discardPick }) }, inE = { id: eCard.id, bonus: eCard.bonus, silenced: !!eCard.silenced, ctx: sideCtx('e', { fromReserve: eFromRes, heldRounds: eCard.heldRounds || 0, discardPick: E.discardPick }) };
@@ -1312,7 +1315,7 @@ async function playRoundHand() {
   const pFromRes = !!pCard.held;
   P.hand.splice(P.hand.indexOf(pCard), 1); syncSlots();
   Sfx.place();
-  await fly(pEl, $('#p-slot'));
+  await HFX.move(pEl, $('#p-slot'));
   setHint(G.online ? 'Waiting for your friend…' : 'Enemy is choosing…');
   let eIdx = i;
   if (G.online) {

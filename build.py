@@ -10,6 +10,7 @@ head = """<title>Payload Push</title>
 body = f"""<style>
 {(d/'style.css').read_text()}
 {(d/'control.css').read_text()}
+{(d/'herofx.css').read_text()}
 </style>
 {(d/'body.html').read_text()}
 <script>
@@ -19,6 +20,7 @@ body = f"""<style>
 {(d/'voices.js').read_text() if (d/'voices.js').exists() else ''}
 {(d/'game.js').read_text()}
 {(d/'howto-pics.js').read_text() if (d/'howto-pics.js').exists() else ''}
+{(d/'herofx.js').read_text()}
 {(d/'control.js').read_text()}
 {(d/'net.js').read_text()}
 </script>
