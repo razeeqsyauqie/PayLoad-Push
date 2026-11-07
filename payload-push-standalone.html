@@ -719,10 +719,17 @@ button, .card, .slot { touch-action: manipulation; }
 .mode-card.blue:hover .mc-inner { box-shadow: 0 0 0 3px #8fd0ff, 0 0 40px rgba(63, 164, 255, .5), 0 24px 50px rgba(0, 0, 0, .55); }
 .mode-card.blue .mc-art::after { background: linear-gradient(180deg, rgba(63, 164, 255, .35), transparent 45%, rgba(11, 21, 48, .95)); }
 .mode-card.blue .pill { background: rgba(63, 164, 255, .18); color: #bfe3ff; border-color: rgba(63, 164, 255, .5); }
+/* Mystery Hero card: purple, with a New tag */
+.mode-card.myst .mc-inner { background: linear-gradient(170deg, #4b2a7a, #140b26 70%); box-shadow: 0 0 0 3px #b07cff, 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.myst:hover .mc-inner { box-shadow: 0 0 0 3px #e0c6ff, 0 0 40px rgba(176, 124, 255, .55), 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.myst .mc-art::after { background: linear-gradient(180deg, rgba(176, 124, 255, .35), transparent 45%, rgba(20, 11, 38, .95)); }
+.mode-card.myst .pill { background: rgba(176, 124, 255, .18); color: #e6d6ff; border-color: rgba(176, 124, 255, .55); }
+.mode-card.myst .mc-badge { background: #b07cff; color: #1a0b33; box-shadow: 0 4px 14px rgba(176, 124, 255, .5); }
+.mode-card.myst .mc-glyph { align-items: start; justify-items: end; padding: 6px 14px; font-size: 90px; color: rgba(225, 200, 255, .3); }
 .mc-badge { position: absolute; left: 50%; top: -14px; z-index: 5; transform: translate(-50%, -100%); padding: 4px 14px; border-radius: 99px; background: #3fa4ff; color: #06142b; font-family: var(--f-display); font-weight: 800; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; box-shadow: 0 4px 14px rgba(63, 164, 255, .45); white-space: nowrap; }
 
 @media (max-width: 560px) {
-  .mode-cards { gap: 12px; flex-wrap: nowrap; }
+  .mode-cards { gap: 40px 12px; flex-wrap: wrap; }
   .mode-card { width: calc(50% - 6px); }
   .mc-body { padding: 10px 10px 12px; }
   .mc-body h3 { font-size: 20px; }
@@ -751,6 +758,13 @@ button, .card, .slot { touch-action: manipulation; }
 .how-pic { margin: 0 0 22px; }
 .how-pic img { width: 100%; max-width: 640px; border-radius: 12px; display: block; margin: 0 auto; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
 .how-pic figcaption { max-width: 640px; margin: 8px auto 0; color: var(--mute); font-size: 14px; text-align: center; }
+
+/* Mode toggles hidden since modes are picked on the mode screen */
+.seg[hidden], .mode-pick[hidden] { display: none !important; }
+
+/* phones: first tap on a hand card lifts it up close, second tap plays it */
+.card.peek { scale: 1.9; translate: 0 -8%; z-index: 40; transition: scale .18s ease, translate .18s ease; }
+.card.peek .front { box-shadow: 0 0 0 1.2cqw var(--accent), 0 8cqw 20cqw rgba(0, 0, 0, .6); }
 
 /* ===== Control mode: square cards, 5x5 board, flip animation ===== */
 .sq { --cw: 150px; width: var(--cw); aspect-ratio: 1; position: relative; container-type: inline-size; flex: none; border-radius: 7%; background: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 8px 20px rgba(0, 0, 0, .45); user-select: none; }
@@ -1089,8 +1103,7 @@ button, .card, .slot { touch-action: manipulation; }
         </div>
       </div>
       <div class="mode-pick">
-        <span class="lbl">Game mode</span>
-        <div class="seg" id="set-mode"><button data-v="hand">Hand of 3</button><button data-v="classic">Classic</button></div>
+        <div class="seg" id="set-mode" hidden><button data-v="hand">Standard</button><button data-v="classic">Quick Play</button></div>
         <p class="mode-desc" id="mode-desc"></p>
       </div>
       <div class="deck-grid" id="deck-choose"></div>
@@ -1128,7 +1141,7 @@ button, .card, .slot { touch-action: manipulation; }
       <div class="page-head">
         <div>
           <h2>Decks</h2>
-          <div class="seg decks-mode" id="decks-mode" aria-label="Game mode"><button data-v="push">Push</button><button data-v="control">Mayhem</button></div>
+          <div class="seg decks-mode" id="decks-mode" aria-label="Game mode" hidden><button data-v="push">Push</button><button data-v="control">Mayhem</button></div>
           <p id="browse-desc" class="push-only"></p>
         </div>
         <button class="btn push-only" id="btn-build">+ Build a deck</button>
@@ -1204,7 +1217,7 @@ button, .card, .slot { touch-action: manipulation; }
     <div class="page">
       <button class="back-link" data-go="menu">‹ Back</button>
       <div class="page-head"><div><h2>How to play</h2><p>Pick a mode to read its rules.</p></div></div>
-      <div class="mode-pick"><div class="seg" id="howto-mode"><button data-v="push" aria-pressed="true">Push</button><button data-v="control">Mayhem</button></div></div>
+      <div class="mode-pick" hidden><div class="seg" id="howto-mode"><button data-v="push" aria-pressed="true">Push</button><button data-v="control">Mayhem</button></div></div>
       <div class="how-sec" id="how-push">
       <figure class="how-pic"><img id="how-pic-push" alt="A Push battle: your hero against the enemy's face-down card, the robot track above, your hand below."><figcaption>Push: both heroes go face up, higher Power wins, and the winner moves the robot one step. Cards with a blue Reserve tag stayed in your hand a round.</figcaption></figure>
       <ol class="steps">
@@ -1239,12 +1252,21 @@ button, .card, .slot { touch-action: manipulation; }
           </ul>
         </div>
         <div class="rule-box">
-          <h3>Classic mode</h3>
+          <h3>Quick Play mode</h3>
           <ul>
             <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
             <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
             <li>On a later round, play either your new card or your Reserve card.</li>
-            <li>Pick the mode on the deck screen or in Settings.</li>
+            <li>Pick Standard, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+          </ul>
+        </div>
+        <div class="rule-box">
+          <h3>Mystery Hero mode</h3>
+          <ul>
+            <li>No deck to pick. You and the enemy each draw from your own shuffled pile of every hero.</li>
+            <li>You never draw the same hero twice, but the enemy can draw the same heroes you do.</li>
+            <li>It plays like Standard: 3 cards in hand, play 1 each round.</li>
+            <li>The match lasts up to 20 rounds.</li>
           </ul>
         </div>
         <div class="rule-box">
@@ -1254,7 +1276,7 @@ button, .card, .slot { touch-action: manipulation; }
             <li>Push it all the way to the enemy base to win.</li>
             <li>If the enemy pushes it to your base, you lose.</li>
             <li>Right-click a card (or press and hold on a phone) to inspect it and see its buffs and debuffs.</li>
-            <li>After 15 rounds, whoever has the robot on the other side wins. If it’s in the middle, it’s a draw.</li>
+            <li>After 15 rounds (20 in Mystery Hero), whoever has the robot on the other side wins. If it’s in the middle, it’s a draw.</li>
           </ul>
         </div>
       </div>
@@ -1377,8 +1399,8 @@ button, .card, .slot { touch-action: manipulation; }
           <div class="seg" id="set-speed"><button data-v="normal">Normal</button><button data-v="fast">Fast</button></div>
         </div>
         <div class="set-row">
-          <span class="lbl">Game mode<span class="sub">Classic: 1 card and 1 Reserve slot. Hand of 3: cards kept for a round are your Reserve.</span></span>
-          <div class="seg" id="set-mode2"><button data-v="hand">Hand of 3</button><button data-v="classic">Classic</button></div>
+          <span class="lbl">Game mode<span class="sub">Standard: cards kept for a round are your Reserve. Quick Play: 1 card and 1 Reserve slot.</span></span>
+          <div class="seg" id="set-mode2"><button data-v="hand">Standard</button><button data-v="classic">Quick Play</button></div>
         </div>
         <div class="set-row">
           <span class="lbl">Card style<span class="sub">Full art shows the heroes. Classic shows the emblems.</span></span>
@@ -1571,7 +1593,10 @@ function seededRng(seed) {
 }
 /* Player-built decks are added here by the UI. */
 const EXTRA_DECKS = [];
-function findDeck(id) { return DECKS.find(x => x.id === id) || EXTRA_DECKS.find(x => x.id === id); }
+/* Mystery Hero: no deck pick. Each side gets its own shuffled pile of every hero, so one side never draws the same hero twice. */
+const MYSTERY_DECK = { id: 'mystery', name: 'Mystery', get heroes() { return Object.keys(HEROES); } };
+const MYSTERY_ROUNDS = 20;
+function findDeck(id) { return id === 'mystery' ? MYSTERY_DECK : DECKS.find(x => x.id === id) || EXTRA_DECKS.find(x => x.id === id); }
 function makeDeck(deckId, rng) {
   const d = findDeck(deckId);
   return shuffle(d.heroes.map(id => ({ uid: 'c' + (++_uid), id, bonus: 0 })), rng);
@@ -2471,9 +2496,9 @@ document.addEventListener('pointerdown', () => { if (Music.want && !Music.src &&
 /* ---------- Mode select: each game mode is a card that tilts in 3D ---------- */
 // New modes go before the Coming soon card, which always stays last.
 const MODES = [
-  { id: 'push', name: 'Push', art: 'reinhardt', text: 'Win battles to push the robot into the enemy base.', tag: 'Hand of 3 · Classic' },
-  { id: 'mayhem', name: 'Mayhem', art: 'mei', text: 'Reveal heroes at once and build combos on the board.', tag: 'Square cards · vs bot', cls: 'blue', badge: 'Beta' },
-  { id: 'soon', name: 'Coming soon', soon: true, text: 'A new way to play is on the way.' },
+  { id: 'standard', name: 'Standard', art: 'reinhardt', text: 'Hold 3 cards. Pick your play each round and push the robot home.', tag: 'Push · Pick a deck' },
+  { id: 'quick', name: 'Quick Play', art: 'mei', text: 'Draw 1 card a round. Play it, or save it in your one Reserve slot.', tag: 'Push · Pick a deck', cls: 'blue' },
+  { id: 'mystery', name: 'Mystery Hero', art: 'zenyatta', text: 'No deck. Draw random heroes, never the same one twice. Up to 20 rounds.', tag: 'Push · Random draws', cls: 'myst', badge: 'New', glyph: '?' },
 ];
 let modeRAF = 0;
 function renderModes() {
@@ -2481,7 +2506,7 @@ function renderModes() {
   for (const m of MODES) {
     const el = document.createElement('button'); el.type = 'button'; el.className = 'mode-card' + (m.soon ? ' soon' : '') + (m.cls ? ' ' + m.cls : '');
     el.dataset.mode = m.id; el.setAttribute('aria-label', m.soon ? 'Coming soon' : m.name + ' mode');
-    el.innerHTML = `<div class="mc-inner"><div class="mc-art"><img class="mc-bg" alt=""><span class="mc-glyph">${m.soon ? '?' : ''}</span></div><div class="mc-body"><h3>${escapeHtml(m.name)}</h3><p>${escapeHtml(m.text)}</p>${m.tag ? `<span class="pill">${escapeHtml(m.tag)}</span>` : ''}</div>${m.soon ? '<div class="mc-ribbon">Coming soon</div>' : ''}<div class="mc-shine"></div></div>${m.badge ? `<span class="mc-badge">${escapeHtml(m.badge)}</span>` : ''}`;
+    el.innerHTML = `<div class="mc-inner"><div class="mc-art"><img class="mc-bg" alt=""><span class="mc-glyph">${m.soon ? '?' : m.glyph || ''}</span></div><div class="mc-body"><h3>${escapeHtml(m.name)}</h3><p>${escapeHtml(m.text)}</p>${m.tag ? `<span class="pill">${escapeHtml(m.tag)}</span>` : ''}</div>${m.soon ? '<div class="mc-ribbon">Coming soon</div>' : ''}<div class="mc-shine"></div></div>${m.badge ? `<span class="mc-badge">${escapeHtml(m.badge)}</span>` : ''}`;
     if (typeof CITY_BG !== 'undefined') el.querySelector('.mc-bg').src = CITY_BG;
     const p = m.art && typeof PORTRAITS !== 'undefined' && PORTRAITS[m.art];
     if (p) { const im = document.createElement('img'); im.className = 'mc-hero'; im.alt = ''; im.src = p.src; el.querySelector('.mc-art').appendChild(im); }
@@ -2496,7 +2521,8 @@ function renderModes() {
       Sfx.init();
       if (m.soon) { Sfx.click(); el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); return; }
       Sfx.click();
-      if (m.id === 'mayhem') { renderCDeckChoose(); show('cdecksel'); return; }
+      if (m.id === 'mystery') { newGame('mystery'); return; }
+      settings.mode = m.id === 'quick' ? 'classic' : 'hand'; saveSettings(); syncModeDesc();
       show('decksel');
     });
   }
@@ -3014,7 +3040,8 @@ function newGame(deckId, online) {
   $('#endscreen').hidden = true;
   $('#picker').hidden = true;
   stopConfetti();
-  const enemyDeck = online ? null : DECKS[Math.floor(Math.random() * DECKS.length)].id;
+  const mystery = !online && deckId === 'mystery';
+  const enemyDeck = online ? null : mystery ? 'mystery' : DECKS[Math.floor(Math.random() * DECKS.length)].id;
   const side = (id, deck) => ({ deckId: id, deck, discard: [], won: false, lost: false, played: [], turret: 0, next: [] });
   if (online) {
     const rA = seededRng(online.seed), rB = seededRng(online.seed ^ 0x9e3779b9), rBattle = seededRng(online.seed ^ 0x51ed270b);
@@ -3023,12 +3050,13 @@ function newGame(deckId, online) {
     const mine = online.flip ? B : A, theirs = online.flip ? A : B;
     mine.deckName = online.flip ? online.decks.B.name : online.decks.A.name;
     theirs.deckName = online.flip ? online.decks.A.name : online.decks.B.name;
-    G = { goal: online.goal, pos: 0, round: 0, over: false, mode: 'hand', online, p: mine, e: theirs,
+    G = { goal: online.goal, pos: 0, round: 0, over: false, mode: 'hand', maxRounds: MAX_ROUNDS, online, p: mine, e: theirs,
       rng: { p: online.flip ? rB : rA, e: online.flip ? rA : rB, battle: rBattle } };
   } else {
     G = {
       goal: settings.length, pos: 0, round: 0, over: false,
-      mode: settings.mode === 'classic' ? 'classic' : 'hand',
+      mode: !mystery && settings.mode === 'classic' ? 'classic' : 'hand',
+      maxRounds: mystery ? MYSTERY_ROUNDS : MAX_ROUNDS, mystery,
       p: side(deckId, makeDeck(deckId)),
       e: side(enemyDeck, makeDeck(enemyDeck)),
     };
@@ -3041,7 +3069,7 @@ function newGame(deckId, online) {
   $('#p-reserve').classList.remove('full', 'can-drop');
   $('#e-reserve').classList.remove('full');
   $('#board').classList.remove('over');
-  $('#e-deckname').textContent = online ? 'Friend · ' + G.e.deckName : getDeck(enemyDeck).name + ' deck';
+  $('#e-deckname').textContent = online ? 'Friend · ' + G.e.deckName : mystery ? 'Mystery Hero' : getDeck(enemyDeck).name + ' deck';
   $('#actions').innerHTML = '';
   hideBanners();
   buildTrack();
@@ -3233,7 +3261,7 @@ async function playRound() {
   const P = G.p, E = G.e;
   G.round++;
   $('#round-no').textContent = G.round;
-  $('#round-max').textContent = MAX_ROUNDS;
+  $('#round-max').textContent = G.maxRounds;
   hideBanners();
   setHint('');
 
@@ -3249,7 +3277,7 @@ async function playRound() {
   // 2. PLAY OR RESERVE
   const choice = await askPlayer(pHand);
   if (G.over) return;
-  const eChoice = aiChoose({ drawn: E.drawn, reserve: E.reserve, deckIds: DECKS.find(d => d.id === E.deckId).heroes, ctx: sideCtx('e') });
+  const eChoice = aiChoose({ drawn: E.drawn, reserve: E.reserve, deckIds: findDeck(E.deckId).heroes, ctx: sideCtx('e') });
 
   let pCard, pEl, pFromRes = false, pBlind = false;
   if (choice === 'play') {
@@ -3428,7 +3456,7 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
   await settleChoices();
 
   if (Math.abs(G.pos) >= G.goal) await endGame(G.pos > 0 ? 'win' : 'lose', false);
-  else if (G.round >= MAX_ROUNDS) await endGame(G.pos > 0 ? 'win' : G.pos < 0 ? 'lose' : 'draw', true);
+  else if (G.round >= G.maxRounds) await endGame(G.pos > 0 ? 'win' : G.pos < 0 ? 'lose' : 'draw', true);
   else await wait(250);
 }
 
@@ -3489,10 +3517,10 @@ function pickDiscard(cards) {
   });
 }
 
-/* ---------- Hand of 3 mode ---------- */
+/* ---------- Standard (hand of 3) mode ---------- */
 const MODE_DESC = {
-  hand: 'Hand of 3 (main mode): keep 3 cards in hand and play 1 each round. A card that stays in your hand for a round becomes your Reserve.',
-  classic: 'Classic: draw 1 card each round. Play it, or save it in your single Reserve slot.',
+  hand: 'Standard: keep 3 cards in hand and play 1 each round. A card that stays in your hand for a round becomes your Reserve.',
+  classic: 'Quick Play: draw 1 card each round. Play it, or save it in your single Reserve slot.',
 };
 function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[settings.mode] || MODE_DESC.hand; }
 const HAND_SLOTS = ['p-hand', 'p-reserve', 'p-hand3'];
@@ -3534,6 +3562,7 @@ function renderEnemyHand() {
   if (n) { const el = cardEl(G.e.hand[0], { down: true }); slot.appendChild(el); slot.dataset.count = n; }
   else delete slot.dataset.count;
 }
+const TOUCH = () => matchMedia('(hover: none)').matches;
 function askHand() {
   return new Promise(resolve => {
     const P = G.p, els = P.slots.map((c, i) => (c ? $('#' + HAND_SLOTS[i] + ' .card') : null));
@@ -3541,7 +3570,7 @@ function askHand() {
     const finish = card => {
       if (done) return; done = true;
       Sfx.init(); Sfx.click();
-      els.forEach(e => { if (e) { e.classList.remove('clickable'); e.onclick = null; } });
+      els.forEach(e => { if (e) { e.classList.remove('clickable', 'peek'); e.onclick = null; } });
       document.removeEventListener('keydown', onKey);
       clearSynergies(); $('#actions').innerHTML = '';
       resolve(card);
@@ -3551,9 +3580,17 @@ function askHand() {
       const others = P.hand.filter(x => x !== c);
       setReady(els[i], readyBonus(c, sideCtx('p', { fromReserve: !!c.held, heldRounds: c.heldRounds || 0, ...reserveView({ hand: others, myDiscards: P.myDiscards }) })));
       els[i].classList.add('clickable');
-      els[i].onclick = () => finish(c);
+      // phones: the first tap shows the card up close, a second tap plays it
+      els[i].onclick = () => {
+        if (!TOUCH() || els[i].classList.contains('peek')) return finish(c);
+        Sfx.init(); Sfx.click();
+        els.forEach(e => e && e.classList.remove('peek'));
+        els[i].style.setProperty('transform-origin', i === 0 ? 'left bottom' : i === els.length - 1 ? 'right bottom' : 'center bottom');
+        els[i].classList.add('peek');
+        setHint('Tap ' + HEROES[c.id].name + ' again to play it.');
+      };
     });
-    setHint('Tap a hero to play it. Cards that stay in your hand for a round become your Reserve.');
+    setHint(TOUCH() ? 'Tap a hero to see it, then tap again to play it.' : 'Tap a hero to play it. Cards that stay in your hand for a round become your Reserve.');
     const onKey = e => { const i = +e.key - 1; if (i >= 0 && i < 3 && P.slots[i]) finish(P.slots[i]); };
     document.addEventListener('keydown', onKey);
   });
@@ -3562,7 +3599,7 @@ async function playRoundHand() {
   const P = G.p, E = G.e;
   G.round++;
   $('#round-no').textContent = G.round;
-  $('#round-max').textContent = MAX_ROUNDS;
+  $('#round-max').textContent = G.maxRounds;
   hideBanners(); setHint('');
   // 1. DRAW up to 3
   const flights = [];
@@ -3683,7 +3720,7 @@ async function endGame(result, timeUp) {
   const deck = G.online ? null : getDeck(G.p.deckId);
   const title = { win: 'Victory', lose: 'Defeat', draw: 'Draw' }[result];
   const line = timeUp
-    ? (result === 'draw' ? `Round ${MAX_ROUNDS} is over and the robot sits in the middle.` : `Round ${MAX_ROUNDS} is over. The robot ended on ${won ? 'the enemy' : 'your'} side.`)
+    ? (result === 'draw' ? `Round ${G.maxRounds} is over and the robot sits in the middle.` : `Round ${G.maxRounds} is over. The robot ended on ${won ? 'the enemy' : 'your'} side.`)
     : `${won ? 'Robot reached the enemy base' : G.online ? 'Your friend reached your base' : 'The enemy reached your base'} in ${G.round} round${G.round === 1 ? '' : 's'}.`;
   end.innerHTML = `<div class="end ${result}">
     <h2>${title}</h2>
@@ -3695,7 +3732,8 @@ async function endGame(result, timeUp) {
   if (won) { Sfx.victory(); startConfetti(); } else if (result === 'lose') Sfx.defeat(); else Sfx.draw0();
   if (G.online) { Net.playing = false; $('#end-again').onclick = () => { Sfx.click(); Net.backToRoom(); }; $('#end-menu').onclick = () => { Sfx.click(); Net.leave(); quitGame('menu'); }; return; }
   $('#end-again').onclick = () => { Sfx.click(); newGame(deck.id); };
-  $('#end-deck').onclick = () => { Sfx.click(); quitGame('decksel'); };
+  $('#end-deck').onclick = () => { Sfx.click(); quitGame(G.mystery ? 'modes' : 'decksel'); };
+  if (G.mystery) $('#end-deck').textContent = 'Change mode';
   $('#end-menu').onclick = () => { Sfx.click(); quitGame('menu'); };
 }
 
@@ -4851,8 +4889,7 @@ const roomCode = () => Array.from({ length: 5 }, () => ROOM_CHARS[Math.floor(Mat
 
 // Modes a room can pick. Only modes that can run in lockstep are open online.
 const ROOM_MODES = [
-  { id: 'push', name: 'Push', art: 'reinhardt', text: 'Win battles to push the robot. Hand of 3.' },
-  { id: 'mayhem', name: 'Mayhem', art: 'mei', text: 'Board battles with square cards.', soon: 'Online soon', cls: 'blue' },
+  { id: 'push', name: 'Standard', art: 'reinhardt', text: 'Win battles to push the robot. Hand of 3.' },
 ];
 const ONLINE_DECK_KEY = 'pp-online-deck';
 const blankMe = () => ({ deck: null, ready: false, where: 'room' });

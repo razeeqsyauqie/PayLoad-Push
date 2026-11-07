@@ -106,7 +106,10 @@ function seededRng(seed) {
 }
 /* Player-built decks are added here by the UI. */
 const EXTRA_DECKS = [];
-function findDeck(id) { return DECKS.find(x => x.id === id) || EXTRA_DECKS.find(x => x.id === id); }
+/* Mystery Hero: no deck pick. Each side gets its own shuffled pile of every hero, so one side never draws the same hero twice. */
+const MYSTERY_DECK = { id: 'mystery', name: 'Mystery', get heroes() { return Object.keys(HEROES); } };
+const MYSTERY_ROUNDS = 20;
+function findDeck(id) { return id === 'mystery' ? MYSTERY_DECK : DECKS.find(x => x.id === id) || EXTRA_DECKS.find(x => x.id === id); }
 function makeDeck(deckId, rng) {
   const d = findDeck(deckId);
   return shuffle(d.heroes.map(id => ({ uid: 'c' + (++_uid), id, bonus: 0 })), rng);

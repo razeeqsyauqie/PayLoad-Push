@@ -199,9 +199,9 @@ document.addEventListener('pointerdown', () => { if (Music.want && !Music.src &&
 /* ---------- Mode select: each game mode is a card that tilts in 3D ---------- */
 // New modes go before the Coming soon card, which always stays last.
 const MODES = [
-  { id: 'push', name: 'Push', art: 'reinhardt', text: 'Win battles to push the robot into the enemy base.', tag: 'Hand of 3 · Classic' },
-  { id: 'mayhem', name: 'Mayhem', art: 'mei', text: 'Reveal heroes at once and build combos on the board.', tag: 'Square cards · vs bot', cls: 'blue', badge: 'Beta' },
-  { id: 'soon', name: 'Coming soon', soon: true, text: 'A new way to play is on the way.' },
+  { id: 'standard', name: 'Standard', art: 'reinhardt', text: 'Hold 3 cards. Pick your play each round and push the robot home.', tag: 'Push · Pick a deck' },
+  { id: 'quick', name: 'Quick Play', art: 'mei', text: 'Draw 1 card a round. Play it, or save it in your one Reserve slot.', tag: 'Push · Pick a deck', cls: 'blue' },
+  { id: 'mystery', name: 'Mystery Hero', art: 'zenyatta', text: 'No deck. Draw random heroes, never the same one twice. Up to 20 rounds.', tag: 'Push · Random draws', cls: 'myst', badge: 'New', glyph: '?' },
 ];
 let modeRAF = 0;
 function renderModes() {
@@ -209,7 +209,7 @@ function renderModes() {
   for (const m of MODES) {
     const el = document.createElement('button'); el.type = 'button'; el.className = 'mode-card' + (m.soon ? ' soon' : '') + (m.cls ? ' ' + m.cls : '');
     el.dataset.mode = m.id; el.setAttribute('aria-label', m.soon ? 'Coming soon' : m.name + ' mode');
-    el.innerHTML = `<div class="mc-inner"><div class="mc-art"><img class="mc-bg" alt=""><span class="mc-glyph">${m.soon ? '?' : ''}</span></div><div class="mc-body"><h3>${escapeHtml(m.name)}</h3><p>${escapeHtml(m.text)}</p>${m.tag ? `<span class="pill">${escapeHtml(m.tag)}</span>` : ''}</div>${m.soon ? '<div class="mc-ribbon">Coming soon</div>' : ''}<div class="mc-shine"></div></div>${m.badge ? `<span class="mc-badge">${escapeHtml(m.badge)}</span>` : ''}`;
+    el.innerHTML = `<div class="mc-inner"><div class="mc-art"><img class="mc-bg" alt=""><span class="mc-glyph">${m.soon ? '?' : m.glyph || ''}</span></div><div class="mc-body"><h3>${escapeHtml(m.name)}</h3><p>${escapeHtml(m.text)}</p>${m.tag ? `<span class="pill">${escapeHtml(m.tag)}</span>` : ''}</div>${m.soon ? '<div class="mc-ribbon">Coming soon</div>' : ''}<div class="mc-shine"></div></div>${m.badge ? `<span class="mc-badge">${escapeHtml(m.badge)}</span>` : ''}`;
     if (typeof CITY_BG !== 'undefined') el.querySelector('.mc-bg').src = CITY_BG;
     const p = m.art && typeof PORTRAITS !== 'undefined' && PORTRAITS[m.art];
     if (p) { const im = document.createElement('img'); im.className = 'mc-hero'; im.alt = ''; im.src = p.src; el.querySelector('.mc-art').appendChild(im); }
@@ -224,7 +224,8 @@ function renderModes() {
       Sfx.init();
       if (m.soon) { Sfx.click(); el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); return; }
       Sfx.click();
-      if (m.id === 'mayhem') { renderCDeckChoose(); show('cdecksel'); return; }
+      if (m.id === 'mystery') { newGame('mystery'); return; }
+      settings.mode = m.id === 'quick' ? 'classic' : 'hand'; saveSettings(); syncModeDesc();
       show('decksel');
     });
   }
@@ -742,7 +743,8 @@ function newGame(deckId, online) {
   $('#endscreen').hidden = true;
   $('#picker').hidden = true;
   stopConfetti();
-  const enemyDeck = online ? null : DECKS[Math.floor(Math.random() * DECKS.length)].id;
+  const mystery = !online && deckId === 'mystery';
+  const enemyDeck = online ? null : mystery ? 'mystery' : DECKS[Math.floor(Math.random() * DECKS.length)].id;
   const side = (id, deck) => ({ deckId: id, deck, discard: [], won: false, lost: false, played: [], turret: 0, next: [] });
   if (online) {
     const rA = seededRng(online.seed), rB = seededRng(online.seed ^ 0x9e3779b9), rBattle = seededRng(online.seed ^ 0x51ed270b);
@@ -751,12 +753,13 @@ function newGame(deckId, online) {
     const mine = online.flip ? B : A, theirs = online.flip ? A : B;
     mine.deckName = online.flip ? online.decks.B.name : online.decks.A.name;
     theirs.deckName = online.flip ? online.decks.A.name : online.decks.B.name;
-    G = { goal: online.goal, pos: 0, round: 0, over: false, mode: 'hand', online, p: mine, e: theirs,
+    G = { goal: online.goal, pos: 0, round: 0, over: false, mode: 'hand', maxRounds: MAX_ROUNDS, online, p: mine, e: theirs,
       rng: { p: online.flip ? rB : rA, e: online.flip ? rA : rB, battle: rBattle } };
   } else {
     G = {
       goal: settings.length, pos: 0, round: 0, over: false,
-      mode: settings.mode === 'classic' ? 'classic' : 'hand',
+      mode: !mystery && settings.mode === 'classic' ? 'classic' : 'hand',
+      maxRounds: mystery ? MYSTERY_ROUNDS : MAX_ROUNDS, mystery,
       p: side(deckId, makeDeck(deckId)),
       e: side(enemyDeck, makeDeck(enemyDeck)),
     };
@@ -769,7 +772,7 @@ function newGame(deckId, online) {
   $('#p-reserve').classList.remove('full', 'can-drop');
   $('#e-reserve').classList.remove('full');
   $('#board').classList.remove('over');
-  $('#e-deckname').textContent = online ? 'Friend · ' + G.e.deckName : getDeck(enemyDeck).name + ' deck';
+  $('#e-deckname').textContent = online ? 'Friend · ' + G.e.deckName : mystery ? 'Mystery Hero' : getDeck(enemyDeck).name + ' deck';
   $('#actions').innerHTML = '';
   hideBanners();
   buildTrack();
@@ -961,7 +964,7 @@ async function playRound() {
   const P = G.p, E = G.e;
   G.round++;
   $('#round-no').textContent = G.round;
-  $('#round-max').textContent = MAX_ROUNDS;
+  $('#round-max').textContent = G.maxRounds;
   hideBanners();
   setHint('');
 
@@ -977,7 +980,7 @@ async function playRound() {
   // 2. PLAY OR RESERVE
   const choice = await askPlayer(pHand);
   if (G.over) return;
-  const eChoice = aiChoose({ drawn: E.drawn, reserve: E.reserve, deckIds: DECKS.find(d => d.id === E.deckId).heroes, ctx: sideCtx('e') });
+  const eChoice = aiChoose({ drawn: E.drawn, reserve: E.reserve, deckIds: findDeck(E.deckId).heroes, ctx: sideCtx('e') });
 
   let pCard, pEl, pFromRes = false, pBlind = false;
   if (choice === 'play') {
@@ -1156,7 +1159,7 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
   await settleChoices();
 
   if (Math.abs(G.pos) >= G.goal) await endGame(G.pos > 0 ? 'win' : 'lose', false);
-  else if (G.round >= MAX_ROUNDS) await endGame(G.pos > 0 ? 'win' : G.pos < 0 ? 'lose' : 'draw', true);
+  else if (G.round >= G.maxRounds) await endGame(G.pos > 0 ? 'win' : G.pos < 0 ? 'lose' : 'draw', true);
   else await wait(250);
 }
 
@@ -1217,10 +1220,10 @@ function pickDiscard(cards) {
   });
 }
 
-/* ---------- Hand of 3 mode ---------- */
+/* ---------- Standard (hand of 3) mode ---------- */
 const MODE_DESC = {
-  hand: 'Hand of 3 (main mode): keep 3 cards in hand and play 1 each round. A card that stays in your hand for a round becomes your Reserve.',
-  classic: 'Classic: draw 1 card each round. Play it, or save it in your single Reserve slot.',
+  hand: 'Standard: keep 3 cards in hand and play 1 each round. A card that stays in your hand for a round becomes your Reserve.',
+  classic: 'Quick Play: draw 1 card each round. Play it, or save it in your single Reserve slot.',
 };
 function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[settings.mode] || MODE_DESC.hand; }
 const HAND_SLOTS = ['p-hand', 'p-reserve', 'p-hand3'];
@@ -1262,6 +1265,7 @@ function renderEnemyHand() {
   if (n) { const el = cardEl(G.e.hand[0], { down: true }); slot.appendChild(el); slot.dataset.count = n; }
   else delete slot.dataset.count;
 }
+const TOUCH = () => matchMedia('(hover: none)').matches;
 function askHand() {
   return new Promise(resolve => {
     const P = G.p, els = P.slots.map((c, i) => (c ? $('#' + HAND_SLOTS[i] + ' .card') : null));
@@ -1269,7 +1273,7 @@ function askHand() {
     const finish = card => {
       if (done) return; done = true;
       Sfx.init(); Sfx.click();
-      els.forEach(e => { if (e) { e.classList.remove('clickable'); e.onclick = null; } });
+      els.forEach(e => { if (e) { e.classList.remove('clickable', 'peek'); e.onclick = null; } });
       document.removeEventListener('keydown', onKey);
       clearSynergies(); $('#actions').innerHTML = '';
       resolve(card);
@@ -1279,9 +1283,17 @@ function askHand() {
       const others = P.hand.filter(x => x !== c);
       setReady(els[i], readyBonus(c, sideCtx('p', { fromReserve: !!c.held, heldRounds: c.heldRounds || 0, ...reserveView({ hand: others, myDiscards: P.myDiscards }) })));
       els[i].classList.add('clickable');
-      els[i].onclick = () => finish(c);
+      // phones: the first tap shows the card up close, a second tap plays it
+      els[i].onclick = () => {
+        if (!TOUCH() || els[i].classList.contains('peek')) return finish(c);
+        Sfx.init(); Sfx.click();
+        els.forEach(e => e && e.classList.remove('peek'));
+        els[i].style.setProperty('transform-origin', i === 0 ? 'left bottom' : i === els.length - 1 ? 'right bottom' : 'center bottom');
+        els[i].classList.add('peek');
+        setHint('Tap ' + HEROES[c.id].name + ' again to play it.');
+      };
     });
-    setHint('Tap a hero to play it. Cards that stay in your hand for a round become your Reserve.');
+    setHint(TOUCH() ? 'Tap a hero to see it, then tap again to play it.' : 'Tap a hero to play it. Cards that stay in your hand for a round become your Reserve.');
     const onKey = e => { const i = +e.key - 1; if (i >= 0 && i < 3 && P.slots[i]) finish(P.slots[i]); };
     document.addEventListener('keydown', onKey);
   });
@@ -1290,7 +1302,7 @@ async function playRoundHand() {
   const P = G.p, E = G.e;
   G.round++;
   $('#round-no').textContent = G.round;
-  $('#round-max').textContent = MAX_ROUNDS;
+  $('#round-max').textContent = G.maxRounds;
   hideBanners(); setHint('');
   // 1. DRAW up to 3
   const flights = [];
@@ -1411,7 +1423,7 @@ async function endGame(result, timeUp) {
   const deck = G.online ? null : getDeck(G.p.deckId);
   const title = { win: 'Victory', lose: 'Defeat', draw: 'Draw' }[result];
   const line = timeUp
-    ? (result === 'draw' ? `Round ${MAX_ROUNDS} is over and the robot sits in the middle.` : `Round ${MAX_ROUNDS} is over. The robot ended on ${won ? 'the enemy' : 'your'} side.`)
+    ? (result === 'draw' ? `Round ${G.maxRounds} is over and the robot sits in the middle.` : `Round ${G.maxRounds} is over. The robot ended on ${won ? 'the enemy' : 'your'} side.`)
     : `${won ? 'Robot reached the enemy base' : G.online ? 'Your friend reached your base' : 'The enemy reached your base'} in ${G.round} round${G.round === 1 ? '' : 's'}.`;
   end.innerHTML = `<div class="end ${result}">
     <h2>${title}</h2>
@@ -1423,7 +1435,8 @@ async function endGame(result, timeUp) {
   if (won) { Sfx.victory(); startConfetti(); } else if (result === 'lose') Sfx.defeat(); else Sfx.draw0();
   if (G.online) { Net.playing = false; $('#end-again').onclick = () => { Sfx.click(); Net.backToRoom(); }; $('#end-menu').onclick = () => { Sfx.click(); Net.leave(); quitGame('menu'); }; return; }
   $('#end-again').onclick = () => { Sfx.click(); newGame(deck.id); };
-  $('#end-deck').onclick = () => { Sfx.click(); quitGame('decksel'); };
+  $('#end-deck').onclick = () => { Sfx.click(); quitGame(G.mystery ? 'modes' : 'decksel'); };
+  if (G.mystery) $('#end-deck').textContent = 'Change mode';
   $('#end-menu').onclick = () => { Sfx.click(); quitGame('menu'); };
 }
 
