@@ -774,6 +774,33 @@ button, .card, .slot { touch-action: manipulation; }
 .card.peek { scale: 1.9; translate: 0 -8%; z-index: 40; transition: scale .18s ease, translate .18s ease; }
 .card.peek .front { box-shadow: 0 0 0 1.2cqw var(--accent), 0 8cqw 20cqw rgba(0, 0, 0, .6); }
 
+/* Control mode card: Tracer orange-red */
+.mode-card.ctrl .mc-inner { background: linear-gradient(170deg, #8a3a12, #1f0c06 70%); box-shadow: 0 0 0 3px #ff7a2e, 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.ctrl:hover .mc-inner { box-shadow: 0 0 0 3px #ffc49a, 0 0 40px rgba(255, 122, 46, .55), 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.ctrl .mc-art::after { background: linear-gradient(180deg, rgba(255, 122, 46, .35), transparent 45%, rgba(31, 12, 6, .95)); }
+.mode-card.ctrl .pill { background: rgba(255, 122, 46, .18); color: #ffd9c2; border-color: rgba(255, 122, 46, .55); }
+.mode-card.ctrl .mc-badge { background: #ff7a2e; color: #2a0e02; box-shadow: 0 4px 14px rgba(255, 122, 46, .5); }
+@media (min-width: 1100px) { .mode-cards { flex-wrap: nowrap; } .mode-card { width: min(240px, 23vw); } }
+
+/* Control mode match: a score strip replaces the robot track */
+#board.ctrlmode .payload, #board.ctrlmode .push-label { display: none; }
+.round-label[hidden], .ctrl-score[hidden] { display: none !important; }
+.ctrl-score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 4px 4px; }
+.cs-side { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.cs-side.enemy { flex-direction: row-reverse; }
+.cs-side.ally .cs-name { color: var(--ally); }
+.cs-side.enemy .cs-name { color: var(--enemy); }
+.cs-turns, .cs-rounds { display: flex; gap: 5px; }
+.cs-turns i { width: 14px; height: 14px; border-radius: 50%; background: rgba(255, 255, 255, .1); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25); transition: background .3s; }
+.cs-side.ally .cs-turns i.on { background: var(--ally); box-shadow: 0 0 10px var(--ally); }
+.cs-side.enemy .cs-turns i.on { background: var(--enemy); box-shadow: 0 0 10px var(--enemy); }
+.cs-rounds i { width: 16px; height: 16px; clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); background: rgba(255, 255, 255, .18); }
+.cs-rounds i.star { background: var(--gold); }
+.cs-mid { text-align: center; font-family: var(--f-display); line-height: 1; }
+.cs-mid b { display: block; font-size: 26px; font-weight: 800; }
+.cs-mid small { color: var(--mute); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+@media (max-width: 560px) { .cs-side { gap: 6px; font-size: 13px; } .cs-turns i { width: 11px; height: 11px; } .cs-rounds i { width: 13px; height: 13px; } .cs-mid b { font-size: 20px; } }
+
 /* ===== Control mode: square cards, 5x5 board, flip animation ===== */
 .sq { --cw: 150px; width: var(--cw); aspect-ratio: 1; position: relative; container-type: inline-size; flex: none; border-radius: 7%; background: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 8px 20px rgba(0, 0, 0, .45); user-select: none; }
 .sq .art { position: absolute; inset: 1.4cqw; height: auto; border-radius: 5.8cqw; overflow: hidden; background: linear-gradient(160deg, var(--c1), var(--c2)); }
@@ -1111,7 +1138,7 @@ button, .card, .slot { touch-action: manipulation; }
         </div>
       </div>
       <div class="mode-pick">
-        <div class="seg" id="set-mode" hidden><button data-v="hand">Standard</button><button data-v="classic">Quick Play</button></div>
+        <div class="seg" id="set-mode" hidden><button data-v="hand">Push</button><button data-v="classic">Quick Play</button></div>
         <p class="mode-desc" id="mode-desc"></p>
       </div>
       <div class="deck-grid" id="deck-choose"></div>
@@ -1265,7 +1292,16 @@ button, .card, .slot { touch-action: manipulation; }
             <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
             <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
             <li>On a later round, play either your new card or your Reserve card.</li>
-            <li>Pick Standard, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+            <li>Pick Push, Control, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+          </ul>
+        </div>
+        <div class="rule-box">
+          <h3>Control mode</h3>
+          <ul>
+            <li>No robot. The match is best of 3 rounds: win 2 rounds to win.</li>
+            <li>Each round is 5 turns. Win 3 turns to take the round.</li>
+            <li>If nobody wins 3 turns, the round is a draw and you play another round (5 rounds at most).</li>
+            <li>It plays like Push: 3 cards in hand, play 1 each turn.</li>
           </ul>
         </div>
         <div class="rule-box">
@@ -1273,7 +1309,7 @@ button, .card, .slot { touch-action: manipulation; }
           <ul>
             <li>No deck to pick. You and the enemy each draw from your own shuffled pile of every hero.</li>
             <li>You never draw the same hero twice, but the enemy can draw the same heroes you do.</li>
-            <li>It plays like Standard: 3 cards in hand, play 1 each round.</li>
+            <li>It plays like Push: 3 cards in hand, play 1 each round.</li>
             <li>The match lasts up to 20 rounds.</li>
           </ul>
         </div>
@@ -1407,8 +1443,8 @@ button, .card, .slot { touch-action: manipulation; }
           <div class="seg" id="set-speed"><button data-v="normal">Normal</button><button data-v="fast">Fast</button></div>
         </div>
         <div class="set-row">
-          <span class="lbl">Game mode<span class="sub">Standard: cards kept for a round are your Reserve. Quick Play: 1 card and 1 Reserve slot.</span></span>
-          <div class="seg" id="set-mode2"><button data-v="hand">Standard</button><button data-v="classic">Quick Play</button></div>
+          <span class="lbl">Game mode<span class="sub">Push: cards kept for a round are your Reserve. Quick Play: 1 card and 1 Reserve slot.</span></span>
+          <div class="seg" id="set-mode2"><button data-v="hand">Push</button><button data-v="classic">Quick Play</button></div>
         </div>
         <div class="set-row">
           <span class="lbl">Card style<span class="sub">Full art shows the heroes. Classic shows the emblems.</span></span>
@@ -1431,7 +1467,8 @@ button, .card, .slot { touch-action: manipulation; }
     <div class="game-wrap" id="board">
       <div class="topbar">
         <button class="icon-btn" id="btn-quit" aria-label="Back to menu"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="round-label">Round <b id="round-no">1</b> / <span id="round-max">20</span></div>
+        <div class="round-label push-label">Round <b id="round-no">1</b> / <span id="round-max">20</span></div>
+        <div class="round-label ctrl-label" id="ctrl-label" hidden></div>
         <button class="icon-btn" id="btn-sound" aria-label="Toggle sound"></button>
       </div>
 
@@ -1443,6 +1480,7 @@ button, .card, .slot { touch-action: manipulation; }
         <div class="zone"><div class="slot mini reserve" id="e-reserve"><div class="ph">Empty</div></div><span class="zone-label">Reserve</span></div>
       </div>
 
+      <div class="ctrl-score" id="ctrl-score" aria-label="Control score" hidden></div>
       <div class="payload" aria-label="Robot track">
         <div class="base ally"><div class="flag"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v6c0 4-3 7-8 8-5-1-8-4-8-8V7z" fill="currentColor"/></svg></div><span>You</span></div>
         <div class="track" id="track">
@@ -2503,10 +2541,12 @@ const Music = {
 document.addEventListener('pointerdown', () => { if (Music.want && !Music.src && !Music.el) Music.play(); }, true);
 /* ---------- Mode select: each game mode is a card that tilts in 3D ---------- */
 // New modes go before the Coming soon card, which always stays last.
+var PLAY_MODE = 'push'; // 'control' when the Control card was picked
 const MODES = [
-  { id: 'standard', name: 'Standard', art: 'reinhardt', text: 'Hold 3 cards. Pick your play each round and push the robot home.', tag: 'Push · Pick a deck' },
-  { id: 'quick', name: 'Quick Play', art: 'mei', text: 'Draw 1 card a round. Play it, or save it in your one Reserve slot.', tag: 'Push · Pick a deck', cls: 'blue' },
-  { id: 'mystery', name: 'Mystery Hero', art: 'zenyatta', text: 'No deck. Draw random heroes, never the same one twice. Up to 20 rounds.', tag: 'Push · Random draws', cls: 'myst', badge: 'New', glyph: '?' },
+  { id: 'standard', name: 'Push', art: 'reinhardt', text: 'Hold 3 cards. Pick your play each round and push the robot home.', tag: 'Hand of 3 · Pick a deck' },
+  { id: 'control', name: 'Control', art: 'tracer', text: 'Best of 3 rounds. Win 3 of 5 turns to take a round.', tag: 'Hand of 3 · Pick a deck', cls: 'ctrl', badge: 'New' },
+  { id: 'quick', name: 'Quick Play', art: 'mei', text: 'Draw 1 card a round. Play it, or save it in your one Reserve slot.', tag: '1 card · Pick a deck', cls: 'blue' },
+  { id: 'mystery', name: 'Mystery Hero', art: 'zenyatta', text: 'No deck. Draw random heroes, never the same one twice. Up to 20 rounds.', tag: 'Hand of 3 · Random draws', cls: 'myst', badge: 'New', glyph: '?' },
 ];
 let modeRAF = 0;
 function renderModes() {
@@ -2529,7 +2569,8 @@ function renderModes() {
       Sfx.init();
       if (m.soon) { Sfx.click(); el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); return; }
       Sfx.click();
-      if (m.id === 'mystery') { newGame('mystery'); return; }
+      if (m.id === 'mystery') { PLAY_MODE = 'push'; newGame('mystery'); return; }
+      PLAY_MODE = m.id === 'control' ? 'control' : 'push';
       settings.mode = m.id === 'quick' ? 'classic' : 'hand'; saveSettings(); syncModeDesc();
       show('decksel');
     });
@@ -3049,6 +3090,7 @@ function newGame(deckId, online) {
   $('#picker').hidden = true;
   stopConfetti();
   const mystery = !online && deckId === 'mystery';
+  const ctrl = !online && !mystery && PLAY_MODE === 'control';
   const enemyDeck = online ? null : mystery ? 'mystery' : DECKS[Math.floor(Math.random() * DECKS.length)].id;
   const side = (id, deck) => ({ deckId: id, deck, discard: [], won: false, lost: false, played: [], turret: 0, next: [] });
   if (online) {
@@ -3063,8 +3105,9 @@ function newGame(deckId, online) {
   } else {
     G = {
       goal: settings.length, pos: 0, round: 0, over: false,
-      mode: !mystery && settings.mode === 'classic' ? 'classic' : 'hand',
-      maxRounds: mystery ? MYSTERY_ROUNDS : MAX_ROUNDS, mystery,
+      mode: !mystery && !ctrl && settings.mode === 'classic' ? 'classic' : 'hand',
+      maxRounds: mystery ? MYSTERY_ROUNDS : ctrl ? CTRL_ROUNDS * CTRL_TURNS : MAX_ROUNDS, mystery,
+      ctrl: ctrl ? { round: 1, turn: 0, w: { p: 0, e: 0 }, rw: { p: 0, e: 0 }, log: [] } : null,
       p: side(deckId, makeDeck(deckId)),
       e: side(enemyDeck, makeDeck(enemyDeck)),
     };
@@ -3072,6 +3115,7 @@ function newGame(deckId, online) {
   for (const s of ['p', 'e']) { if (G.mode === 'hand') { G[s].hand = []; G[s].slots = [null, null, null]; } else G[s].reserve = null; }
   setPowerMode(G.mode);
   setModeLayout();
+  $('#board').classList.toggle('ctrlmode', !!G.ctrl); ctrlBoard();
   // reset board
   for (const id of ['#p-slot', '#e-slot', '#p-hand', '#e-hand', '#p-reserve', '#e-reserve', '#p-hand3']) $$(id + ' .card').forEach(c => c.remove());
   $('#p-reserve').classList.remove('full', 'can-drop');
@@ -3379,18 +3423,19 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
     els[r.winner].classList.add('won');
     els[other(r.winner)].classList.add('lost');
     if (r.winner === 'p') Sfx.win(); else Sfx.lose();
-    const pushTxt = r.push === 0 ? 'Robot holds' : r.push > 2 ? 'Game won' : r.push === 2 ? 'Push 2' : 'Push 1';
+    const pushTxt = G.ctrl ? 'Turn won' : r.push === 0 ? 'Robot holds' : r.push > 2 ? 'Game won' : r.push === 2 ? 'Push 2' : 'Push 1';
     res.innerHTML = (r.winner === 'p' ? 'You win' : G.online ? 'Friend wins' : 'Enemy wins') + `<small>${r.powers.p} vs ${r.powers.e} · ${pushTxt}</small>`;
     res.className = 'result show ' + (r.winner === 'p' ? 'ally' : 'enemy');
   } else {
     Sfx.draw0();
-    res.innerHTML = `Draw<small>${r.powers.p} vs ${r.powers.e} · Robot holds</small>`;
+    res.innerHTML = `Draw<small>${r.powers.p} vs ${r.powers.e} · ${G.ctrl ? 'No one scores' : 'Robot holds'}</small>`;
     res.className = 'result show';
   }
   await wait(1100);
 
   // 6. PUSH
-  if (r.winner && r.push) {
+  if (G.ctrl) { if (r.winner) { G.ctrl.w[r.winner]++; Sfx.push(); } ctrlBoard(); }
+  else if (r.winner && r.push) {
     G.pos += r.winner === 'p' ? r.push : -r.push;
     G.pos = Math.max(-G.goal, Math.min(G.goal, G.pos));
     Sfx.push();
@@ -3398,7 +3443,7 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
     const cart = $('#cart'); cart.classList.add('pushing'); cart.classList.toggle('face-l', r.winner === 'e'); cart.classList.remove('walk'); void cart.offsetWidth; cart.classList.add('walk');
     await wait(800);
   }
-  if (r.pull && G.pos && Math.abs(G.pos) < G.goal) {
+  if (!G.ctrl && r.pull && G.pos && Math.abs(G.pos) < G.goal) {
     G.pos -= Math.sign(G.pos);
     toast('Gravitic Flux pulls the robot toward the middle');
     Sfx.ability('swap'); updateTrack();
@@ -3463,7 +3508,8 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
 
   await settleChoices();
 
-  if (Math.abs(G.pos) >= G.goal) await endGame(G.pos > 0 ? 'win' : 'lose', false);
+  if (G.ctrl) await ctrlAfterTurn();
+  else if (Math.abs(G.pos) >= G.goal) await endGame(G.pos > 0 ? 'win' : 'lose', false);
   else if (G.round >= G.maxRounds) await endGame(G.pos > 0 ? 'win' : G.pos < 0 ? 'lose' : 'draw', true);
   else await wait(250);
 }
@@ -3527,10 +3573,47 @@ function pickDiscard(cards) {
 
 /* ---------- Standard (hand of 3) mode ---------- */
 const MODE_DESC = {
-  hand: 'Standard: keep 3 cards in hand and play 1 each round. A card that stays in your hand for a round becomes your Reserve.',
+  hand: 'Push: keep 3 cards in hand and play 1 each round. A card that stays in your hand for a round becomes your Reserve.',
   classic: 'Quick Play: draw 1 card each round. Play it, or save it in your single Reserve slot.',
 };
-function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[settings.mode] || MODE_DESC.hand; }
+MODE_DESC.control = 'Control: best of 3 rounds. Each round is 5 turns, and the first to win 3 turns takes the round. Win 2 rounds to win the match.';
+function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[PLAY_MODE === 'control' ? 'control' : settings.mode] || MODE_DESC.hand; }
+
+/* ---------- Control mode: best of 3 rounds, 5 turns each. 3 turn wins take a round; otherwise the round is a draw. ---------- */
+const CTRL_TURNS = 5, CTRL_WIN = 3, CTRL_NEED = 2, CTRL_ROUNDS = 5; // draws add rounds, up to 5 in total
+function ctrlBoard() {
+  const C = G && G.ctrl, box = $('#ctrl-score'), lab = $('#ctrl-label');
+  if (!box || !lab) return;
+  box.hidden = lab.hidden = !C;
+  if (!C) return;
+  const pips = (n, of, cls) => Array.from({ length: of }, (_, i) => `<i class="${i < n ? cls : ''}"></i>`).join('');
+  lab.innerHTML = `Round <b>${C.round}</b> · Turn <b>${Math.min(C.turn + 1, CTRL_TURNS)}</b> / ${CTRL_TURNS}`;
+  box.innerHTML = `<div class="cs-side ally"><span class="cs-name">You</span><span class="cs-turns">${pips(C.w.p, CTRL_WIN, 'on')}</span><span class="cs-rounds">${pips(C.rw.p, CTRL_NEED, 'star')}</span></div>`
+    + `<div class="cs-mid"><b>${C.w.p} – ${C.w.e}</b><small>turns this round</small></div>`
+    + `<div class="cs-side enemy"><span class="cs-name">Enemy</span><span class="cs-turns">${pips(C.w.e, CTRL_WIN, 'on')}</span><span class="cs-rounds">${pips(C.rw.e, CTRL_NEED, 'star')}</span></div>`;
+}
+async function ctrlAfterTurn() {
+  const C = G.ctrl;
+  C.turn++;
+  const done = C.w.p >= CTRL_WIN || C.w.e >= CTRL_WIN || C.turn >= CTRL_TURNS;
+  if (!done) { ctrlBoard(); await wait(250); return; }
+  const who = C.w.p >= CTRL_WIN ? 'p' : C.w.e >= CTRL_WIN ? 'e' : null;
+  if (who) C.rw[who]++;
+  C.log.push(who || 'draw');
+  ctrlBoard();
+  const res = $('#result');
+  res.innerHTML = `${who === 'p' ? 'Round won' : who === 'e' ? 'Round lost' : 'Round drawn'}<small>Round ${C.round} · turns ${C.w.p} to ${C.w.e}</small>`;
+  res.className = 'result show' + (who === 'p' ? ' ally' : who === 'e' ? ' enemy' : '');
+  if (who === 'p') Sfx.win(); else if (who === 'e') Sfx.lose(); else Sfx.draw0();
+  await wait(1600);
+  res.className = 'result';
+  if (C.rw.p >= CTRL_NEED || C.rw.e >= CTRL_NEED) { await endGame(C.rw.p > C.rw.e ? 'win' : 'lose', false); return; }
+  if (C.log.length >= CTRL_ROUNDS) { await endGame(C.rw.p > C.rw.e ? 'win' : C.rw.p < C.rw.e ? 'lose' : 'draw', true); return; }
+  C.round++; C.turn = 0; C.w = { p: 0, e: 0 };
+  ctrlBoard();
+  toast(`Round ${C.round} starts`);
+  await wait(400);
+}
 const HAND_SLOTS = ['p-hand', 'p-reserve', 'p-hand3'];
 function setModeLayout() {
   const hand = G.mode === 'hand';
@@ -3737,7 +3820,7 @@ async function endGame(result, timeUp) {
   const end = $('#endscreen');
   const deck = G.online ? null : getDeck(G.p.deckId);
   const title = { win: 'Victory', lose: 'Defeat', draw: 'Draw' }[result];
-  const line = timeUp
+  const line = G.ctrl ? (result === 'draw' ? `${G.ctrl.log.length} rounds played and nobody won 2. Rounds ${G.ctrl.rw.p} to ${G.ctrl.rw.e}.` : `${won ? 'You' : 'The enemy'} won ${G.ctrl.rw[won ? 'p' : 'e']} rounds to ${G.ctrl.rw[won ? 'e' : 'p']}.`) : timeUp
     ? (result === 'draw' ? `Round ${G.maxRounds} is over and the robot sits in the middle.` : `Round ${G.maxRounds} is over. The robot ended on ${won ? 'the enemy' : 'your'} side.`)
     : `${won ? 'Robot reached the enemy base' : G.online ? 'Your friend reached your base' : 'The enemy reached your base'} in ${G.round} round${G.round === 1 ? '' : 's'}.`;
   end.innerHTML = `<div class="end ${result}">
@@ -4907,7 +4990,7 @@ const roomCode = () => Array.from({ length: 5 }, () => ROOM_CHARS[Math.floor(Mat
 
 // Modes a room can pick. Only modes that can run in lockstep are open online.
 const ROOM_MODES = [
-  { id: 'push', name: 'Standard', art: 'reinhardt', text: 'Win battles to push the robot. Hand of 3.' },
+  { id: 'push', name: 'Push', art: 'reinhardt', text: 'Win battles to push the robot. Hand of 3.' },
 ];
 const ONLINE_DECK_KEY = 'pp-online-deck';
 const blankMe = () => ({ deck: null, ready: false, where: 'room' });

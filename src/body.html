@@ -47,7 +47,7 @@
         </div>
       </div>
       <div class="mode-pick">
-        <div class="seg" id="set-mode" hidden><button data-v="hand">Standard</button><button data-v="classic">Quick Play</button></div>
+        <div class="seg" id="set-mode" hidden><button data-v="hand">Push</button><button data-v="classic">Quick Play</button></div>
         <p class="mode-desc" id="mode-desc"></p>
       </div>
       <div class="deck-grid" id="deck-choose"></div>
@@ -201,7 +201,16 @@
             <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
             <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
             <li>On a later round, play either your new card or your Reserve card.</li>
-            <li>Pick Standard, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+            <li>Pick Push, Control, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+          </ul>
+        </div>
+        <div class="rule-box">
+          <h3>Control mode</h3>
+          <ul>
+            <li>No robot. The match is best of 3 rounds: win 2 rounds to win.</li>
+            <li>Each round is 5 turns. Win 3 turns to take the round.</li>
+            <li>If nobody wins 3 turns, the round is a draw and you play another round (5 rounds at most).</li>
+            <li>It plays like Push: 3 cards in hand, play 1 each turn.</li>
           </ul>
         </div>
         <div class="rule-box">
@@ -209,7 +218,7 @@
           <ul>
             <li>No deck to pick. You and the enemy each draw from your own shuffled pile of every hero.</li>
             <li>You never draw the same hero twice, but the enemy can draw the same heroes you do.</li>
-            <li>It plays like Standard: 3 cards in hand, play 1 each round.</li>
+            <li>It plays like Push: 3 cards in hand, play 1 each round.</li>
             <li>The match lasts up to 20 rounds.</li>
           </ul>
         </div>
@@ -343,8 +352,8 @@
           <div class="seg" id="set-speed"><button data-v="normal">Normal</button><button data-v="fast">Fast</button></div>
         </div>
         <div class="set-row">
-          <span class="lbl">Game mode<span class="sub">Standard: cards kept for a round are your Reserve. Quick Play: 1 card and 1 Reserve slot.</span></span>
-          <div class="seg" id="set-mode2"><button data-v="hand">Standard</button><button data-v="classic">Quick Play</button></div>
+          <span class="lbl">Game mode<span class="sub">Push: cards kept for a round are your Reserve. Quick Play: 1 card and 1 Reserve slot.</span></span>
+          <div class="seg" id="set-mode2"><button data-v="hand">Push</button><button data-v="classic">Quick Play</button></div>
         </div>
         <div class="set-row">
           <span class="lbl">Card style<span class="sub">Full art shows the heroes. Classic shows the emblems.</span></span>
@@ -367,7 +376,8 @@
     <div class="game-wrap" id="board">
       <div class="topbar">
         <button class="icon-btn" id="btn-quit" aria-label="Back to menu"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="round-label">Round <b id="round-no">1</b> / <span id="round-max">20</span></div>
+        <div class="round-label push-label">Round <b id="round-no">1</b> / <span id="round-max">20</span></div>
+        <div class="round-label ctrl-label" id="ctrl-label" hidden></div>
         <button class="icon-btn" id="btn-sound" aria-label="Toggle sound"></button>
       </div>
 
@@ -379,6 +389,7 @@
         <div class="zone"><div class="slot mini reserve" id="e-reserve"><div class="ph">Empty</div></div><span class="zone-label">Reserve</span></div>
       </div>
 
+      <div class="ctrl-score" id="ctrl-score" aria-label="Control score" hidden></div>
       <div class="payload" aria-label="Robot track">
         <div class="base ally"><div class="flag"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v6c0 4-3 7-8 8-5-1-8-4-8-8V7z" fill="currentColor"/></svg></div><span>You</span></div>
         <div class="track" id="track">

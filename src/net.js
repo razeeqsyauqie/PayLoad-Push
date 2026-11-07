@@ -30,7 +30,7 @@ const roomCode = () => Array.from({ length: 5 }, () => ROOM_CHARS[Math.floor(Mat
 
 // Modes a room can pick. Only modes that can run in lockstep are open online.
 const ROOM_MODES = [
-  { id: 'push', name: 'Standard', art: 'reinhardt', text: 'Win battles to push the robot. Hand of 3.' },
+  { id: 'push', name: 'Push', art: 'reinhardt', text: 'Win battles to push the robot. Hand of 3.' },
 ];
 const ONLINE_DECK_KEY = 'pp-online-deck';
 const blankMe = () => ({ deck: null, ready: false, where: 'room' });
