@@ -1088,6 +1088,9 @@ button, .card, .slot { touch-action: manipulation; }
 .card .owner-tag.mine { background: #2f9bff; }
 .card .owner-tag.theirs { background: #ff4256; }
 
+.hx-wuyang { box-shadow: 0 0 22px 6px rgba(127, 216, 255, .8); border-radius: 10px; }
+.hx-wyorb { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font: 800 16px/1 system-ui, sans-serif; color: #04263d; background: radial-gradient(circle at 35% 35%, #fff, #7fd8ff 55%, #2a8fd0); box-shadow: 0 0 18px 6px rgba(127, 216, 255, .75); }
+
 </style>
 <div class="sky" aria-hidden="true"></div>
 <div class="app">
@@ -1611,7 +1614,7 @@ const HEROES = Object.fromEntries([
   H('mizuki', 'Mizuki', 'support', 3, '#c7a0ff', '#2e1d58', 'Katashiro Return', 'He and next hero +1 per robot step on your side.', { type: 'next', give: 'boost', amount: 1, perBehind: true, self: true }),
   H('jetpackcat', 'Jetpack Cat', 'support', 3, '#ffd36b', '#7a4a10', 'Rally', 'After battle: pick 1 of 3 deck cards. To Reserve, +3.', { type: 'tutor', count: 3, amount: 3 }),
   H('doctrine', 'Doctrine', 'support', 6, '#c0303f', '#1a0a12', 'Deliverance', 'After battle: enemy hand −1, your hand +1.', { type: 'handSwing', amount: 1 }),
-  H('wuyang', 'Wuyang', 'support', 4, '#7fd8ff', '#14466b', 'Xuanwu Staff', 'After battle: your hand +1 per card you discarded with abilities. Can’t be discarded.', { type: 'handPerDiscard' }),
+  H('wuyang', 'Wuyang', 'support', 4, '#7fd8ff', '#14466b', 'Xuanwu Staff', 'In hand: when you discard a card, your hero in play and top deck card +2. Can’t be discarded.', { type: 'discardWatch', mode: 'both', amount: 2 }),
 ]);
 // Sojourn starts at 0 in Hand of 3 but 4 in Classic, and counts as 4 toward a custom deck's Power limit.
 Object.assign(HEROES.sojourn, { modePower: { hand: 0, classic: 4 }, deckPower: 4 });
@@ -1858,12 +1861,20 @@ function resolve(input, rng = Math.random) {
   }
   // 7b. Discards happen before Power is counted
   const lostNow = { p: [], e: [] };
+  // Wuyang · Xuanwu Staff: while he is in your hand, each card you discard gives your hero in play a bonus now
+  const wuyangPlay = s => {
+    const wf = HEROES.wuyang.fx;
+    if (!wf || wf.type !== 'discardWatch' || (wf.mode !== 'play' && wf.mode !== 'both') || frozen) return;
+    if (!(S[s].ctx.myHand || []).some(c => c.id === 'wuyang')) return;
+    gain(s, wf.amount, 'Wuyang · Xuanwu Staff: +' + wf.amount + ' Power from the discard.', 'boost', 'Wuyang · Xuanwu Staff');
+  };
   const discardNow = (s, owner, card, verb) => {
     lostNow[owner].push(card);
     after.push({ kind: 'discard', side: s, of: owner, uid: card.uid, by: S[s].hero.name, order: 1 });
     ev(s, 'discard', verb + ' ' + HEROES[card.id].name + (HEROES[card.id].name.endsWith('.') ? '' : '.'), { target: owner });
     // B.O.B.: discarded during play, his Power joins his owner's hero
     if (card.id === 'bob') gain(owner, card.power, 'B.O.B. is discarded and joins the fight! +' + card.power + ' Power.', 'boost', 'B.O.B. · Get Him, B.O.B.!');
+    wuyangPlay(s);
   };
   const pool = (list, side) => (list || []).filter(c => !UNDISCARDABLE(c.id) && !lostNow[side].some(x => x.uid === c.uid));
   for (const s of ['p', 'e']) {
@@ -1924,6 +1935,7 @@ function resolve(input, rng = Math.random) {
     } else if (fx.type === 'mill') {
       const top = me.ctx.foeTop;
       if (top === 'bob') gain(t, HEROES.bob.power, 'B.O.B. is discarded and joins the fight! +' + HEROES.bob.power + ' Power.', 'boost', 'B.O.B. · Get Him, B.O.B.!');
+      if (top) wuyangPlay(s);
       if (top && HEROES[top].role === 'damage') gain(s, fx.amount, 'Hits ' + HEROES[top].name + ' on top of the enemy deck: +' + fx.amount + ' Power.');
       else if (top) { const a = Math.min(me.power, fx.amount); me.power -= a; ev(s, 'decay', 'Hits ' + HEROES[top].name + ', not a Damage hero: −' + a + ' Power.', { target: s, delta: -a }); }
     } else if (fx.type === 'distDecay') {
@@ -1996,7 +2008,6 @@ function resolve(input, rng = Math.random) {
     if (fx.type === 'weakenDeck') after.push({ kind: 'weakenDeck', side: s, of: t, count: fx.count, all: !!fx.all, amount: fx.amount, by: S[s].hero.name, order: 5 });
     if (fx.type === 'callMech') after.push({ kind: 'callMech', side: s, id: fx.id, by: S[s].hero.name, order: 4 });
     if (fx.type === 'tutor') after.push({ kind: 'tutor', side: s, count: fx.count, amount: fx.amount, by: S[s].hero.name, order: 7 });
-    if (fx.type === 'handPerDiscard') { const n = S[s].ctx.myDiscards || 0; if (n) after.push({ kind: 'buffHand', side: s, amount: n, by: S[s].hero.name, order: 5 }); }
     if (fx.type === 'swapReserves') after.push({ kind: 'swapReserves', side: s, by: S[s].hero.name, order: 3 });
     if (fx.type === 'resurrect') after.push({ kind: 'resurrect', side: s, by: S[s].hero.name, order: 4 });
     if (fx.type === 'buffReserve') after.push({ kind: 'buffReserve', side: s, amount: fx.amount, by: S[s].hero.name, order: 5 });
@@ -2051,6 +2062,14 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
     P.turret = 0; P.hackedNext = false; P.choice = null;
   }
   const whose = s => (s === mine ? 'your' : 'the enemy’s');
+  // Wuyang · Xuanwu Staff: while he waits in hand, each card your abilities discard powers up the top of your deck (or him)
+  const wuyang = s => {
+    const P = sides[s], w = (P.hand || heldCards(P)).find(c => c.id === 'wuyang' && !c.silenced), fx = HEROES.wuyang.fx;
+    if (!w || fx.type !== 'discardWatch' || fx.mode === 'play') return;
+    if (fx.mode === 'self') { addBonus(w, fx.amount, 'Wuyang'); msgs.push({ side: s, of: s, text: 'Wuyang · Xuanwu Staff: he gains +' + fx.amount + ' in ' + whose(s) + ' hand.' }); return; }
+    const top = P.deck[P.deck.length - 1];
+    if (top) { addBonus(top, fx.amount, 'Wuyang'); msgs.push({ side: s, of: s, text: 'Wuyang · Xuanwu Staff: the top card of ' + whose(s) + ' deck gets +' + fx.amount + '.' }); }
+  };
   for (const a of r.after) {
     const me = sides[a.side];
     if (a.kind === 'discard') {
@@ -2061,6 +2080,7 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
       takeCard(S, c); if (!a.quiet) c.burned = true; S.discard.push(c);
       if (!a.quiet) { sides.p.discards = (sides.p.discards || 0) + 1; sides.e.discards = (sides.e.discards || 0) + 1; me.myDiscards = (me.myDiscards || 0) + 1; }
       msgs.push({ side: a.side, of: a.of, text: a.quiet ? 'B.O.B. heads back to the discard pile.' : a.by + ' discards ' + (a.random || a.uid ? HEROES[c.id].name + ' from ' + whose(a.of) + (S.hand && !c.held ? ' hand.' : ' Reserve.') : whose(a.of) + ' Reserve card (' + HEROES[c.id].name + ').') });
+      if (!a.quiet) { wuyang(a.side); if (HEROES.wuyang.fx.any) wuyang(a.side === 'p' ? 'e' : 'p'); }
     } else if (a.kind === 'swapReserves') {
       const P = sides.p, E = sides.e, x = mainReserve(P), y = mainReserve(E);
       if (x || y) {
@@ -2124,7 +2144,7 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
     } else if (a.kind === 'mill') {
       const foe = sides[a.of], c = foe.deck.length && !UNDISCARDABLE(foe.deck[foe.deck.length - 1].id) ? foe.deck.pop() : null;
       if (c) { c.burned = true; foe.discard.push(c); sides.p.discards = (sides.p.discards || 0) + 1; sides.e.discards = (sides.e.discards || 0) + 1; me.myDiscards = (me.myDiscards || 0) + 1;
-        msgs.push({ side: a.side, of: a.of, text: a.by + ' discards ' + HEROES[c.id].name + ' from the top of ' + whose(a.of) + ' deck.' }); }
+        msgs.push({ side: a.side, of: a.of, text: a.by + ' discards ' + HEROES[c.id].name + ' from the top of ' + whose(a.of) + ' deck.' }); wuyang(a.side); if (HEROES.wuyang.fx.any) wuyang(a.side === 'p' ? 'e' : 'p'); }
     } else if (a.kind === 'weakenDeck') {
       const F = sides[a.of], pool = F.deck.slice(); let n = 0;
       if (a.scatter) {
@@ -3797,6 +3817,7 @@ async function showEvent(ev, els, base) {
   const target = ev.target ? els[ev.target] : els[ev.side];
   if (ev.kind === 'hack') { els[ev.target].classList.add('hacked'); }
   if (ev.title.startsWith('B.O.B.')) { const b = ev.side === 'p' ? $$('#p-hand .card, #p-reserve .card, #p-hand3 .card').find(c => c.dataset.hero === 'bob') : $('#e-reserve .card, #e-hand .card'); if (HFX.on()) await HFX.bobJump(b, ev.target ? els[ev.target] : els[ev.side]); else if (b) fx(b, 'casting', 900); }
+  if (ev.title.startsWith('Wuyang')) { const wy = ev.side === 'p' ? $$('#p-hand .card, #p-reserve .card, #p-hand3 .card').find(c => c.dataset.hero === 'wuyang') : $('#e-hand, #e-reserve'); if (HFX.on()) await HFX.wuyangGive(wy, els[ev.side], HEROES.wuyang.fx.amount); else fx(els[ev.side], 'fx-buff', 900); }
   if (ev.kind === 'random') {
     // spin the number before landing
     const sp = els[ev.side].querySelector('.power span');
@@ -4256,7 +4277,30 @@ const HFX = (() => {
     await c.animate([{ opacity: 1, scale: '1' }, { opacity: 0, scale: '1.25', filter: 'blur(4px)' }], { duration: D(380), easing: 'ease-in', fill: 'forwards' }).finished;
     c.remove();
   }
-  return { on, reveal, move, snap, hook, bobJump, decorate, HAND, PLAY };
+  // Wuyang: shown face up beside its owner's hand, sends a water orb into the hero in play
+  async function wuyangGive(from, to, amt) {
+    if (!on() || !live(to)) return;
+    const b = mid(to), a = live(from) ? mid(from) : { x: innerWidth / 2, y: b.y > innerHeight / 2 ? innerHeight - 70 : 70 };
+    const w = b.w * .7, h = b.h * .7;
+    const c = cardEl({ id: 'wuyang', uid: 'wyfx' }); c.classList.add('hx-wuyang');
+    const y0 = Math.min(Math.max(a.y - h / 2, 8), innerHeight - h - 8);
+    Object.assign(c.style, { position: 'fixed', left: (a.x - w / 2) + 'px', top: y0 + 'px', width: w + 'px', height: h + 'px', margin: 0, zIndex: 9001, pointerEvents: 'none' });
+    document.body.appendChild(c);
+    try { Sfx.ability && Sfx.ability('boost'); } catch (e) {}
+    await c.animate([{ opacity: 0, scale: '.6', translate: '0 20px' }, { opacity: 1, scale: '1.08', translate: '0 0' }, { opacity: 1, scale: '1' }], { duration: D(420), easing: 'ease-out', fill: 'forwards' }).finished;
+    ring(c, '#7fd8ff', 1.8, 600);
+    const o = document.createElement('div'); o.className = 'hx-wyorb'; o.textContent = '+' + amt;
+    const cr = c.getBoundingClientRect();
+    Object.assign(o.style, { position: 'fixed', left: (cr.left + cr.width / 2 - 22) + 'px', top: (cr.top + cr.height / 2 - 22) + 'px', zIndex: 9002, pointerEvents: 'none' });
+    document.body.appendChild(o);
+    const dx = b.x - (cr.left + cr.width / 2), dy = b.y - (cr.top + cr.height / 2);
+    await o.animate([{ translate: '0 0', scale: '.6' }, { translate: `${dx * .5}px ${dy * .5 - 60}px`, scale: '1.2', offset: .5 }, { translate: `${dx}px ${dy}px`, scale: '1' }], { duration: D(560), easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }).finished;
+    o.remove();
+    ring(to, '#7fd8ff', 2.2, 700); burst(to, 14, '#7fd8ff', { dist: 1, size: 6 }); hop([to], 8);
+    await c.animate([{ opacity: 1 }, { opacity: 0, translate: '0 10px' }], { duration: D(380), delay: D(150), fill: 'forwards' }).finished;
+    c.remove();
+  }
+  return { on, reveal, move, snap, hook, bobJump, wuyangGive, decorate, HAND, PLAY };
 })();
 
 /* ===== Mayhem mode (called Control until v80; internal names still say control/c*): 5x9 board, both players reveal a hero at the same time, build the strongest board over 3 rounds ===== */

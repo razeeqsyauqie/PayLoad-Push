@@ -309,5 +309,28 @@ const HFX = (() => {
     await c.animate([{ opacity: 1, scale: '1' }, { opacity: 0, scale: '1.25', filter: 'blur(4px)' }], { duration: D(380), easing: 'ease-in', fill: 'forwards' }).finished;
     c.remove();
   }
-  return { on, reveal, move, snap, hook, bobJump, decorate, HAND, PLAY };
+  // Wuyang: shown face up beside its owner's hand, sends a water orb into the hero in play
+  async function wuyangGive(from, to, amt) {
+    if (!on() || !live(to)) return;
+    const b = mid(to), a = live(from) ? mid(from) : { x: innerWidth / 2, y: b.y > innerHeight / 2 ? innerHeight - 70 : 70 };
+    const w = b.w * .7, h = b.h * .7;
+    const c = cardEl({ id: 'wuyang', uid: 'wyfx' }); c.classList.add('hx-wuyang');
+    const y0 = Math.min(Math.max(a.y - h / 2, 8), innerHeight - h - 8);
+    Object.assign(c.style, { position: 'fixed', left: (a.x - w / 2) + 'px', top: y0 + 'px', width: w + 'px', height: h + 'px', margin: 0, zIndex: 9001, pointerEvents: 'none' });
+    document.body.appendChild(c);
+    try { Sfx.ability && Sfx.ability('boost'); } catch (e) {}
+    await c.animate([{ opacity: 0, scale: '.6', translate: '0 20px' }, { opacity: 1, scale: '1.08', translate: '0 0' }, { opacity: 1, scale: '1' }], { duration: D(420), easing: 'ease-out', fill: 'forwards' }).finished;
+    ring(c, '#7fd8ff', 1.8, 600);
+    const o = document.createElement('div'); o.className = 'hx-wyorb'; o.textContent = '+' + amt;
+    const cr = c.getBoundingClientRect();
+    Object.assign(o.style, { position: 'fixed', left: (cr.left + cr.width / 2 - 22) + 'px', top: (cr.top + cr.height / 2 - 22) + 'px', zIndex: 9002, pointerEvents: 'none' });
+    document.body.appendChild(o);
+    const dx = b.x - (cr.left + cr.width / 2), dy = b.y - (cr.top + cr.height / 2);
+    await o.animate([{ translate: '0 0', scale: '.6' }, { translate: `${dx * .5}px ${dy * .5 - 60}px`, scale: '1.2', offset: .5 }, { translate: `${dx}px ${dy}px`, scale: '1' }], { duration: D(560), easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }).finished;
+    o.remove();
+    ring(to, '#7fd8ff', 2.2, 700); burst(to, 14, '#7fd8ff', { dist: 1, size: 6 }); hop([to], 8);
+    await c.animate([{ opacity: 1 }, { opacity: 0, translate: '0 10px' }], { duration: D(380), delay: D(150), fill: 'forwards' }).finished;
+    c.remove();
+  }
+  return { on, reveal, move, snap, hook, bobJump, wuyangGive, decorate, HAND, PLAY };
 })();

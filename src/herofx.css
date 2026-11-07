@@ -113,3 +113,6 @@
 .card .owner-tag { position: absolute; left: 50%; bottom: -16cqw; translate: -50% 0; z-index: 9; padding: 2.5cqw 6cqw; border-radius: 99px; white-space: nowrap; font: 800 9cqw/1 'Saira Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .5); }
 .card .owner-tag.mine { background: #2f9bff; }
 .card .owner-tag.theirs { background: #ff4256; }
+
+.hx-wuyang { box-shadow: 0 0 22px 6px rgba(127, 216, 255, .8); border-radius: 10px; }
+.hx-wyorb { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font: 800 16px/1 system-ui, sans-serif; color: #04263d; background: radial-gradient(circle at 35% 35%, #fff, #7fd8ff 55%, #2a8fd0); box-shadow: 0 0 18px 6px rgba(127, 216, 255, .75); }

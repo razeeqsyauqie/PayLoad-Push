@@ -77,7 +77,7 @@ const HEROES = Object.fromEntries([
   H('mizuki', 'Mizuki', 'support', 3, '#c7a0ff', '#2e1d58', 'Katashiro Return', 'He and next hero +1 per robot step on your side.', { type: 'next', give: 'boost', amount: 1, perBehind: true, self: true }),
   H('jetpackcat', 'Jetpack Cat', 'support', 3, '#ffd36b', '#7a4a10', 'Rally', 'After battle: pick 1 of 3 deck cards. To Reserve, +3.', { type: 'tutor', count: 3, amount: 3 }),
   H('doctrine', 'Doctrine', 'support', 6, '#c0303f', '#1a0a12', 'Deliverance', 'After battle: enemy hand −1, your hand +1.', { type: 'handSwing', amount: 1 }),
-  H('wuyang', 'Wuyang', 'support', 4, '#7fd8ff', '#14466b', 'Xuanwu Staff', 'In hand: when you discard a card, your top deck card +2. Can’t be discarded.', { type: 'discardWatch', mode: 'top', amount: 2 }),
+  H('wuyang', 'Wuyang', 'support', 4, '#7fd8ff', '#14466b', 'Xuanwu Staff', 'In hand: when you discard a card, your hero in play and top deck card +2. Can’t be discarded.', { type: 'discardWatch', mode: 'both', amount: 2 }),
 ]);
 // Sojourn starts at 0 in Hand of 3 but 4 in Classic, and counts as 4 toward a custom deck's Power limit.
 Object.assign(HEROES.sojourn, { modePower: { hand: 0, classic: 4 }, deckPower: 4 });
@@ -324,12 +324,20 @@ function resolve(input, rng = Math.random) {
   }
   // 7b. Discards happen before Power is counted
   const lostNow = { p: [], e: [] };
+  // Wuyang · Xuanwu Staff: while he is in your hand, each card you discard gives your hero in play a bonus now
+  const wuyangPlay = s => {
+    const wf = HEROES.wuyang.fx;
+    if (!wf || wf.type !== 'discardWatch' || (wf.mode !== 'play' && wf.mode !== 'both') || frozen) return;
+    if (!(S[s].ctx.myHand || []).some(c => c.id === 'wuyang')) return;
+    gain(s, wf.amount, 'Wuyang · Xuanwu Staff: +' + wf.amount + ' Power from the discard.', 'boost', 'Wuyang · Xuanwu Staff');
+  };
   const discardNow = (s, owner, card, verb) => {
     lostNow[owner].push(card);
     after.push({ kind: 'discard', side: s, of: owner, uid: card.uid, by: S[s].hero.name, order: 1 });
     ev(s, 'discard', verb + ' ' + HEROES[card.id].name + (HEROES[card.id].name.endsWith('.') ? '' : '.'), { target: owner });
     // B.O.B.: discarded during play, his Power joins his owner's hero
     if (card.id === 'bob') gain(owner, card.power, 'B.O.B. is discarded and joins the fight! +' + card.power + ' Power.', 'boost', 'B.O.B. · Get Him, B.O.B.!');
+    wuyangPlay(s);
   };
   const pool = (list, side) => (list || []).filter(c => !UNDISCARDABLE(c.id) && !lostNow[side].some(x => x.uid === c.uid));
   for (const s of ['p', 'e']) {
@@ -390,6 +398,7 @@ function resolve(input, rng = Math.random) {
     } else if (fx.type === 'mill') {
       const top = me.ctx.foeTop;
       if (top === 'bob') gain(t, HEROES.bob.power, 'B.O.B. is discarded and joins the fight! +' + HEROES.bob.power + ' Power.', 'boost', 'B.O.B. · Get Him, B.O.B.!');
+      if (top) wuyangPlay(s);
       if (top && HEROES[top].role === 'damage') gain(s, fx.amount, 'Hits ' + HEROES[top].name + ' on top of the enemy deck: +' + fx.amount + ' Power.');
       else if (top) { const a = Math.min(me.power, fx.amount); me.power -= a; ev(s, 'decay', 'Hits ' + HEROES[top].name + ', not a Damage hero: −' + a + ' Power.', { target: s, delta: -a }); }
     } else if (fx.type === 'distDecay') {
@@ -519,7 +528,7 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
   // Wuyang · Xuanwu Staff: while he waits in hand, each card your abilities discard powers up the top of your deck (or him)
   const wuyang = s => {
     const P = sides[s], w = (P.hand || heldCards(P)).find(c => c.id === 'wuyang' && !c.silenced), fx = HEROES.wuyang.fx;
-    if (!w) return;
+    if (!w || fx.type !== 'discardWatch' || fx.mode === 'play') return;
     if (fx.mode === 'self') { addBonus(w, fx.amount, 'Wuyang'); msgs.push({ side: s, of: s, text: 'Wuyang · Xuanwu Staff: he gains +' + fx.amount + ' in ' + whose(s) + ' hand.' }); return; }
     const top = P.deck[P.deck.length - 1];
     if (top) { addBonus(top, fx.amount, 'Wuyang'); msgs.push({ side: s, of: s, text: 'Wuyang · Xuanwu Staff: the top card of ' + whose(s) + ' deck gets +' + fx.amount + '.' }); }
