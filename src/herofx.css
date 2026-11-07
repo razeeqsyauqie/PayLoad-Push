@@ -109,3 +109,7 @@
 @keyframes hl-swing { 0%, 100% { rotate: 22deg; } 50% { rotate: -22deg; } }
 @keyframes hl-page { 0% { transform: rotateY(0); } 50%, 100% { transform: rotateY(-180deg); } }
 @media (prefers-reduced-motion: reduce) { .hl, #hfx { display: none !important; } }
+/* A card shown in the middle because an ability discarded it: whose card it is */
+.card .owner-tag { position: absolute; left: 50%; bottom: -16cqw; translate: -50% 0; z-index: 9; padding: 2.5cqw 6cqw; border-radius: 99px; white-space: nowrap; font: 800 9cqw/1 'Saira Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .5); }
+.card .owner-tag.mine { background: #2f9bff; }
+.card .owner-tag.theirs { background: #ff4256; }

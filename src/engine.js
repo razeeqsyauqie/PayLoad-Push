@@ -35,7 +35,7 @@ const HEROES = Object.fromEntries([
   H('domina', 'Domina', 'tank', 5, '#7ad9e6', '#173f5c', 'Barrier Array', 'Swap Power with the enemy.', { type: 'swap' }),
   H('dmon_baby', 'Baby D.Mon', 'tank', 2, '#9fd0ff', '#2a4f9e', 'Ready Up', 'Powers up D.Mon Mech.', NONE),
   H('dmon', 'D.Mon Mech', 'tank', 10, '#7fb2ff', '#1c2f6b', 'Limit Break', '−4 unless Baby D.Mon was played.', { type: 'penalty', amount: 4, when: { played: 'dmon_baby' } }),
-  H('hazard', 'Hazard', 'tank', 9, '#c58cf0', '#2e1640', 'Spike Guard', '−1 per Damage hero played by either side (−6 at most).', { type: 'decay', role: 'damage', per: 1, both: true, max: 6 }),
+  H('hazard', 'Hazard', 'tank', 9, '#c58cf0', '#2e1640', 'Spike Guard', '−1 per Damage hero the enemy has played.', { type: 'decay', role: 'damage', per: 1 }), // Syauqie 2026-11-07: enemy side only, no cap
   // ---- Damage
   H('soldier', 'Soldier: 76', 'damage', 7, '#5383cc', '#14203b', 'No ability', 'No tricks, just Power.', NONE),
   H('cassidy', 'Cassidy', 'damage', 7, '#d27c45', '#4a2011', 'Deadeye', 'Discard enemy’s top card. Damage: +2, else −2.', { type: 'mill', amount: 2 }),
@@ -64,7 +64,7 @@ const HEROES = Object.fromEntries([
   // ---- Support
   H('mercy', 'Mercy', 'support', 6, '#ffe9a3', '#d38a24', 'Resurrect', 'After battle: best discarded hero to empty Reserve.', { type: 'resurrect' }),
   H('sombra', 'Sombra', 'support', 4, '#b885ff', '#27104e', 'Hack', 'Hack the enemy now and next battle. Unblockable.', { type: 'hack', bypass: true, lingering: true }),
-  H('brigitte', 'Brigitte', 'support', 6, '#f2b552', '#782d15', 'Catnapper', 'When losing: your next win pushes 2.', { type: 'next', give: 'bigPush', until: 'win', when: { behind: true } }),
+  H('brigitte', 'Brigitte', 'support', 6, '#f2b552', '#782d15', 'Catnapper', 'If she loses: your next win pushes 2.', { type: 'next', give: 'bigPush', until: 'win', onLose: true }), // Syauqie 2026-11-07: only when she loses the battle
   H('ana', 'Ana', 'support', 2, '#76a4ce', '#182b47', 'Biotic Grenade', 'Next 2 enemies −2 and can’t gain Power.', { type: 'curse', amount: 2, antiheal: true, turns: 2 }),
   H('lucio', 'Lúcio', 'support', 5, '#9be35f', '#245a1c', 'Speed Boost', 'Your next 3 Tanks +2.', { type: 'next', give: 'boost', amount: 2, turns: 3, role: 'tank' }),
   H('illari', 'Illari', 'support', 2, '#ffcf5c', '#7a3d0c', 'Healing Pylon', 'Your next 3 heroes +2.', { type: 'next', give: 'boost', amount: 2, turns: 3 }),
@@ -467,7 +467,7 @@ function resolve(input, rng = Math.random) {
     if (fx.type === 'drainReserve') after.push({ kind: 'drain', side: s, amount: fx.amount, by: S[s].hero.name, order: 5 });
     if (fx.type === 'next') {
       if (fx.cleanseHand) after.push({ kind: 'cleanseHand', side: s, by: S[s].hero.name, order: 5 });
-      if (!fx.when || condMet(fx.when, S[s].ctx)) after.push({ kind: 'next', side: s, give: fx.give, amount: nextAmount(fx, S[s].ctx), turns: fx.turns || 1, until: fx.until || null, role: fx.role || null, name: S[s].abName, by: S[s].hero.name, order: 6 });
+      if ((!fx.when || condMet(fx.when, S[s].ctx)) && (!fx.onLose || (winner && winner !== s))) after.push({ kind: 'next', side: s, give: fx.give, amount: nextAmount(fx, S[s].ctx), turns: fx.turns || 1, until: fx.until || null, role: fx.role || null, name: S[s].abName, by: S[s].hero.name, order: 6 });
     }
     if (fx.type === 'hack' && fx.handHack && S[s].ctx.fromReserve) after.push({ kind: 'hackHand', side: s, of: t, by: S[s].hero.name, order: 6 });
     if (fx.type === 'hack' && fx.lingering) after.push({ kind: 'hackNext', side: s, of: t, by: S[s].hero.name, order: 6 });

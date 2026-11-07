@@ -119,15 +119,9 @@ const HFX = (() => {
       at(700, () => { ring(el, '#ffb02e', 2.8, 700); ring(el, '#5a3a1a', 1.8, 500); burst(el, 22, '#b9905b', { shape: 'rock', dist: 1.1, y: .4, size: 9 }); hop(x.all, 26); shake([document.body], 3, 300); });
       return 1500;
     },
-    roadhog(el, x) {
+    roadhog(el, x) { // the chain flies out at the enemy's cards; the card he hooks is pulled out face up when it's discarded (hook below)
       const src = x.hand; if (!live(src)) { ring(el, '#9ca36a', 1.6); return 600; }
-      beam(el, src, '#a7a7a7', 4, 700, 0, 'chain');
-      at(380, () => { // a card is yanked out of the enemy's hand to the middle of the screen, then crumbles
-        const m = mid(src), w = Math.max(60, Math.min(m.w, 90)), c = put('cardback', m.x, m.y, 2200, { width: w + 'px', height: w * 1.4 + 'px' });
-        go(c, [{ transform: 'translate(-50%,-50%) scale(.6) rotate(-10deg)' }, { transform: `translate(calc(-50% + ${innerWidth / 2 - m.x}px), calc(-50% + ${innerHeight / 2 - m.y}px)) scale(1.5) rotate(0)` }], 520, { fill: 'forwards', ease: 'cubic-bezier(.2,1.3,.4,1)' });
-        at(1100, () => snap(c));
-      });
-      return 2000;
+      beam(el, src, '#a7a7a7', 4, 700, 0, 'chain'); at(250, () => shake([src], 3, 300)); return 800;
     },
     zarya(el, x) { glyph(el, 'grav', '', 1100, 0, 1.3); at(150, () => knock(x.foes, el, -34, 0, 1100)); at(150, () => lift(x.foes, 14, 1100)); return 1250; },
     wreckingball(el, x) { go(el, [{ transform: 'translateX(-220px) rotate(-540deg) scale(.6)', opacity: 0 }, { transform: 'none', opacity: 1 }], 600, { add: true, ease: 'cubic-bezier(.2,.8,.3,1)' });
@@ -283,5 +277,13 @@ const HFX = (() => {
     await (go(el, [{ opacity: 0, transform: 'scale(.85)' }, { opacity: 1, transform: 'none' }], 320) || {}).finished;
     el.style.opacity = '';
   }
-  return { on, reveal, move, snap, decorate, HAND, PLAY };
+  // Roadhog hooked a card (Syauqie: show the card first): the chain pulls the real card, face up, from where it sat
+  // to the middle of the screen. `card` is the big card already in the arena, `from` where the hooked card was, `by` Roadhog's slot.
+  function hook(card, from, by) {
+    if (!on() || !live(card) || !live(from)) return;
+    const a = mid(from), b = mid(card);
+    if (live(by)) beam(by, from, '#a7a7a7', 4, 500, 0, 'chain');
+    card.animate([{ translate: `${a.x - b.x}px ${a.y - b.y}px`, scale: '.45' }, { translate: `${a.x - b.x}px ${a.y - b.y}px`, scale: '.45', offset: .3 }, { translate: '0 0', scale: '1' }], { duration: D(700), easing: 'cubic-bezier(.3,1.3,.5,1)' });
+  }
+  return { on, reveal, move, snap, hook, decorate, HAND, PLAY };
 })();

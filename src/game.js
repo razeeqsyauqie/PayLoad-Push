@@ -844,12 +844,17 @@ function openDiscard(s) {
 }
 for (const s of ['p', 'e']) $('#' + s + '-discard').addEventListener('click', () => { if (G) { Sfx.init(); Sfx.click(); openDiscard(s); } });
 /* An ability discarded a card: show it big in the arena, then send it to its owner's discard pile. */
-async function revealDiscard(card, s) {
+async function revealDiscard(card, s, hooked) {
   const arena = $('#arena'), el = cardEl(card);
   if (card.bonus) setPower(el, basePower(card), HEROES[card.id].power);
   el.classList.add('reveal-card');
+  // whose card it is (Syauqie: show if it belongs to you or the opponent)
+  el.insertAdjacentHTML('beforeend', `<div class="owner-tag ${s === 'p' ? 'mine' : 'theirs'}">${s === 'p' ? 'Your card' : G.online ? 'Friend’s card' : 'Enemy card'}</div>`);
+  // Roadhog's Chain Hook: the hooked card is pulled face up out of its owner's hand to the middle (Syauqie: show the card first)
+  const from = hooked && ($$('#' + s + '-hand .card, #' + s + '-reserve .card, #' + s + '-hand3 .card').find(c => c.dataset.uid === card.uid) || $('#' + s + '-hand .card') || $('#' + s + '-hand'));
   arena.appendChild(el);
-  el.animate([{ transform: 'translate(-50%, -50%) scale(.4) rotate(-8deg)', opacity: 0 }, { transform: 'translate(-50%, -50%) scale(1) rotate(0)', opacity: 1 }], { duration: T(320), easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'forwards' });
+  if (hooked && HFX.on()) { el.style.transform = 'translate(-50%, -50%)'; HFX.hook(el, from, $('#' + other(s) + '-slot')); await wait(700); }
+  else el.animate([{ transform: 'translate(-50%, -50%) scale(.4) rotate(-8deg)', opacity: 0 }, { transform: 'translate(-50%, -50%) scale(1) rotate(0)', opacity: 1 }], { duration: T(320), easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'forwards' });
   await wait(950);
   // discarded cards crumble to dust (Syauqie: a universal effect so everyone sees it was discarded)
   if (HFX.on()) await HFX.snap(el); else await flyAway(el, rectOf($('#' + s + '-discard')), { dur: 450 });
@@ -977,7 +982,8 @@ async function playRound() {
   let pCard, pEl, pFromRes = false, pBlind = false;
   if (choice === 'play') {
     pCard = P.drawn; pEl = pHand; Sfx.place();
-    await HFX.move(pEl, $('#p-slot'));
+    Voice.play(pCard.id); // Syauqie: your hero says a line when you play it
+  await HFX.move(pEl, $('#p-slot'));
   } else if (choice === 'reserve') {
     P.reserve = P.drawn; Sfx.place();
     await fly(pHand, $('#p-reserve'));
@@ -992,7 +998,8 @@ async function playRound() {
     pCard = P.reserve; P.reserve = null; pFromRes = true; pEl = rEl;
     $('#p-reserve').classList.remove('full');
     Sfx.place();
-    await HFX.move(pEl, $('#p-slot'));
+    Voice.play(pCard.id); // Syauqie: your hero says a line when you play it
+  await HFX.move(pEl, $('#p-slot'));
     P.deck.unshift(P.drawn); updateCounts();
     flyAway(pHand, rectOf($('#p-pile')), { dur: 360 });
   }
@@ -1037,7 +1044,7 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
   // 3. REVEAL
   await wait(350);
   eEl.classList.remove('down');
-  if (pBlind) pEl.classList.remove('down');
+  if (pBlind) { pEl.classList.remove('down'); Voice.play(pCard.id); }
   Sfx.flip();
   await wait(550);
   Sfx.reveal();
@@ -1140,7 +1147,7 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
     if (s && (m.text.includes(' discards ') || m.text.includes('discard pile')) && G[s].discard.length < held[s]) {
       const card = fresh[s][G[s].discard.length - dlen[s]];
       G[s].discard.push(card);
-      await revealDiscard(card, s);
+      await revealDiscard(card, s, m.text.startsWith('Roadhog'));
       await wait(250);
     } else await wait(1250);
   }
@@ -1315,6 +1322,7 @@ async function playRoundHand() {
   const pFromRes = !!pCard.held;
   P.hand.splice(P.hand.indexOf(pCard), 1); syncSlots();
   Sfx.place();
+  Voice.play(pCard.id); // Syauqie: your hero says a line when you play it
   await HFX.move(pEl, $('#p-slot'));
   setHint(G.online ? 'Waiting for your friend…' : 'Enemy is choosing…');
   let eIdx = i;
