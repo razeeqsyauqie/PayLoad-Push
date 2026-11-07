@@ -1605,7 +1605,7 @@ const HEROES = Object.fromEntries([
   H('moira', 'Moira', 'support', 6, '#c86bff', '#3a0d40', 'Biotic Grasp', 'After battle: drain 3 from enemy Reserve to yours.', { type: 'drainReserve', amount: 3 }),
   H('baptiste', 'Baptiste', 'support', 5, '#63d9ab', '#1b4d3c', 'Amplification Matrix', 'After battle: hack 2 of your cards for good, then no-ability heroes +3.', { type: 'buffDeck', plain: true, amount: 3, silence: 2 }),
   H('kiriko', 'Kiriko', 'support', 6, '#ff8f8f', '#5c1a26', 'Protection Suzu', 'Next 2 heroes: no debuffs or hacks. Clears debuffs in hand.', { type: 'next', give: 'suzu', amount: 0, turns: 2, cleanseHand: true }),
-  H('lifeweaver', 'Lifeweaver', 'support', 6, '#ffc2e0', '#6a3a5c', 'Life Grip', 'Until you win, losing by 2 or less is a draw.', { type: 'next', give: 'closeCall', amount: 2, until: 'win' }),
+  H('lifeweaver', 'Lifeweaver', 'support', 6, '#ffc2e0', '#6a3a5c', 'Life Grip', 'Until you win, losing by 1 or less is a draw.', { type: 'next', give: 'closeCall', amount: 1, until: 'win' }),
   H('juno', 'Juno', 'support', 5, '#ff9ee8', '#3b1f6e', 'Orbital Ray', 'After battle: your deck +1.', { type: 'buffDeck', amount: 1, deckOnly: true }),
   H('mizuki', 'Mizuki', 'support', 3, '#c7a0ff', '#2e1d58', 'Katashiro Return', 'He and next hero +1 per robot step on your side.', { type: 'next', give: 'boost', amount: 1, perBehind: true, self: true }),
   H('jetpackcat', 'Jetpack Cat', 'support', 3, '#ffd36b', '#7a4a10', 'Rally', 'After battle: pick 1 of 3 deck cards. To Reserve, +3.', { type: 'tutor', count: 3, amount: 3 }),
@@ -3893,7 +3893,7 @@ function modsHtml(card, s, waiting) {
     const lasts = x => x.until === 'win' ? 'until one of these heroes wins' : x.turns > 1 ? x.turns + ' heroes left' : 'next hero';
     for (const x of Pl.next || []) {
       if (x.role && x.role !== h.role) continue;
-      const what = x.give === 'boost' ? '+' + x.amount + ' Power' : x.give === 'suzu' ? '+' + x.amount + ' Power, can’t be lowered' : x.give === 'protect' ? 'Power can’t be lowered' : x.give === 'bigPush' ? 'Pushes 2 if it wins' : x.give === 'closeCall' ? 'Losing by 2 or less is a draw' : x.give === 'cleanse' ? 'Debuffs removed' : 'Helped';
+      const what = x.give === 'boost' ? '+' + x.amount + ' Power' : x.give === 'suzu' ? '+' + x.amount + ' Power, can’t be lowered' : x.give === 'protect' ? 'Power can’t be lowered' : x.give === 'bigPush' ? 'Pushes 2 if it wins' : x.give === 'closeCall' ? 'Losing by ' + x.amount + ' or less is a draw' : x.give === 'cleanse' ? 'Debuffs removed' : 'Helped';
       row(x.by, what + ' · ' + lasts(x), true);
     }
     for (const c of Pl.curse || []) row(c.by, '−' + c.amount + ' Power' + (c.antiheal ? ', can’t gain Power' : '') + ' · ' + lasts(c), false);
