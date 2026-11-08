@@ -763,12 +763,12 @@ button, .card, .slot { touch-action: manipulation; }
 .card.peek { scale: 1.9; translate: 0 -8%; z-index: 40; transition: scale .18s ease, translate .18s ease; }
 .card.peek .front { box-shadow: 0 0 0 1.2cqw var(--accent), 0 8cqw 20cqw rgba(0, 0, 0, .6); }
 
-/* Control mode card: Tracer orange-red */
-.mode-card.ctrl .mc-inner { background: linear-gradient(170deg, #8a3a12, #1f0c06 70%); box-shadow: 0 0 0 3px #ff7a2e, 0 24px 50px rgba(0, 0, 0, .55); }
-.mode-card.ctrl:hover .mc-inner { box-shadow: 0 0 0 3px #ffc49a, 0 0 40px rgba(255, 122, 46, .55), 0 24px 50px rgba(0, 0, 0, .55); }
-.mode-card.ctrl .mc-art::after { background: linear-gradient(180deg, rgba(255, 122, 46, .35), transparent 45%, rgba(31, 12, 6, .95)); }
-.mode-card.ctrl .pill { background: rgba(255, 122, 46, .18); color: #ffd9c2; border-color: rgba(255, 122, 46, .55); }
-.mode-card.ctrl .mc-badge { background: #ff7a2e; color: #2a0e02; box-shadow: 0 4px 14px rgba(255, 122, 46, .5); }
+/* Control mode card: green (orange belongs to Push) */
+.mode-card.ctrl .mc-inner { background: linear-gradient(170deg, #12603a, #061a10 70%); box-shadow: 0 0 0 3px #2fd47a, 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.ctrl:hover .mc-inner { box-shadow: 0 0 0 3px #a5f2c6, 0 0 40px rgba(47, 212, 122, .55), 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.ctrl .mc-art::after { background: linear-gradient(180deg, rgba(47, 212, 122, .3), transparent 45%, rgba(6, 26, 16, .95)); }
+.mode-card.ctrl .pill { background: rgba(47, 212, 122, .16); color: #c9f7dc; border-color: rgba(47, 212, 122, .55); }
+.mode-card.ctrl .mc-badge { background: #2fd47a; color: #04200f; box-shadow: 0 4px 14px rgba(47, 212, 122, .5); }
 @media (min-width: 1100px) { .mode-cards { flex-wrap: nowrap; gap: 20px; } .mode-card { width: min(210px, 17vw); } .mode-card .mc-body h3 { font-size: 26px; } }
 
 /* Control mode match: a score strip replaces the robot track */
@@ -839,3 +839,22 @@ button, .card, .slot { touch-action: manipulation; }
 
 .icon-btn[hidden] { display: none !important; }
 #board.ctrlmode .topbar .round-label { margin-left: auto; margin-right: auto; }
+
+/* How to play: general rules, then a mode picker with one colour per mode */
+.how-h { margin: 28px 0 10px; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(26px, 4.5vw, 36px); transform: skewX(-8deg); transform-origin: left bottom; }
+.how-sub { margin: -4px 0 12px; color: var(--mute); }
+.how-modes { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+.how-mode-btn { all: unset; box-sizing: border-box; cursor: pointer; --mc: #ff9c1a; position: relative; width: 112px; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
+  background: linear-gradient(170deg, color-mix(in srgb, var(--mc) 45%, #0a1322), #0a1322 75%); box-shadow: 0 0 0 2px color-mix(in srgb, var(--mc) 55%, transparent), 0 10px 24px rgba(0, 0, 0, .45); transition: transform .2s, box-shadow .2s, filter .2s; filter: saturate(.7) brightness(.85); }
+.how-mode-btn img { position: absolute; left: 50%; bottom: 22px; height: 92%; transform: translateX(-50%); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .6)); pointer-events: none; }
+.how-mode-btn span { position: relative; z-index: 1; padding: 6px 8px 8px; background: linear-gradient(180deg, transparent, rgba(5, 10, 20, .95) 45%); font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 15px; line-height: 1; text-align: center; color: #fff; }
+.how-mode-btn:hover, .how-mode-btn:focus-visible { transform: translateY(-3px); filter: none; }
+.how-mode-btn[aria-selected="true"] { transform: translateY(-5px); filter: none; box-shadow: 0 0 0 3px var(--mc), 0 0 26px color-mix(in srgb, var(--mc) 55%, transparent), 0 14px 28px rgba(0, 0, 0, .5); }
+.how-mode-panel[hidden] { display: none; }
+.how-mode-panel { --mc: #ff9c1a; border-radius: 16px; padding: 16px; background: linear-gradient(160deg, color-mix(in srgb, var(--mc) 16%, transparent), transparent 70%); border: 1px solid color-mix(in srgb, var(--mc) 45%, transparent); }
+.how-mode-lead { margin: 0 0 12px; font-family: var(--f-display); font-weight: 700; font-size: 18px; letter-spacing: .02em; color: color-mix(in srgb, var(--mc) 60%, #fff); }
+.how-mode-panel .rule-box, .dm-rules-box .rule-box { background: linear-gradient(135deg, color-mix(in srgb, var(--mc) 16%, transparent), color-mix(in srgb, var(--mc) 3%, transparent)); border-color: color-mix(in srgb, var(--mc) 45%, transparent); }
+.how-mode-panel .rule-box h3, .dm-rules-box .rule-box h3 { color: color-mix(in srgb, var(--mc) 55%, #fff); }
+.m-push { --mc: #ff9c1a; } .m-ctrl { --mc: #2fd47a; } .m-dm { --mc: #ff3b54; } .m-quick { --mc: #3fa4ff; } .m-myst { --mc: #b07cff; }
+#dm-rules .dm-rules-box { --mc: #ff3b54; } #ctrl-rules .dm-rules-box { --mc: #2fd47a; }
+@media (max-width: 560px) { .how-modes { gap: 6px; flex-wrap: nowrap; } .how-mode-btn { width: calc(20% - 5px); } .how-mode-btn img { bottom: 26px; } .how-mode-btn span { font-size: 11px; padding: 5px 3px 6px; } .how-mode-panel { padding: 12px; } }

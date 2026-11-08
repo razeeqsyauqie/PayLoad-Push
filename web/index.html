@@ -777,12 +777,12 @@ button, .card, .slot { touch-action: manipulation; }
 .card.peek { scale: 1.9; translate: 0 -8%; z-index: 40; transition: scale .18s ease, translate .18s ease; }
 .card.peek .front { box-shadow: 0 0 0 1.2cqw var(--accent), 0 8cqw 20cqw rgba(0, 0, 0, .6); }
 
-/* Control mode card: Tracer orange-red */
-.mode-card.ctrl .mc-inner { background: linear-gradient(170deg, #8a3a12, #1f0c06 70%); box-shadow: 0 0 0 3px #ff7a2e, 0 24px 50px rgba(0, 0, 0, .55); }
-.mode-card.ctrl:hover .mc-inner { box-shadow: 0 0 0 3px #ffc49a, 0 0 40px rgba(255, 122, 46, .55), 0 24px 50px rgba(0, 0, 0, .55); }
-.mode-card.ctrl .mc-art::after { background: linear-gradient(180deg, rgba(255, 122, 46, .35), transparent 45%, rgba(31, 12, 6, .95)); }
-.mode-card.ctrl .pill { background: rgba(255, 122, 46, .18); color: #ffd9c2; border-color: rgba(255, 122, 46, .55); }
-.mode-card.ctrl .mc-badge { background: #ff7a2e; color: #2a0e02; box-shadow: 0 4px 14px rgba(255, 122, 46, .5); }
+/* Control mode card: green (orange belongs to Push) */
+.mode-card.ctrl .mc-inner { background: linear-gradient(170deg, #12603a, #061a10 70%); box-shadow: 0 0 0 3px #2fd47a, 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.ctrl:hover .mc-inner { box-shadow: 0 0 0 3px #a5f2c6, 0 0 40px rgba(47, 212, 122, .55), 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.ctrl .mc-art::after { background: linear-gradient(180deg, rgba(47, 212, 122, .3), transparent 45%, rgba(6, 26, 16, .95)); }
+.mode-card.ctrl .pill { background: rgba(47, 212, 122, .16); color: #c9f7dc; border-color: rgba(47, 212, 122, .55); }
+.mode-card.ctrl .mc-badge { background: #2fd47a; color: #04200f; box-shadow: 0 4px 14px rgba(47, 212, 122, .5); }
 @media (min-width: 1100px) { .mode-cards { flex-wrap: nowrap; gap: 20px; } .mode-card { width: min(210px, 17vw); } .mode-card .mc-body h3 { font-size: 26px; } }
 
 /* Control mode match: a score strip replaces the robot track */
@@ -853,6 +853,25 @@ button, .card, .slot { touch-action: manipulation; }
 
 .icon-btn[hidden] { display: none !important; }
 #board.ctrlmode .topbar .round-label { margin-left: auto; margin-right: auto; }
+
+/* How to play: general rules, then a mode picker with one colour per mode */
+.how-h { margin: 28px 0 10px; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(26px, 4.5vw, 36px); transform: skewX(-8deg); transform-origin: left bottom; }
+.how-sub { margin: -4px 0 12px; color: var(--mute); }
+.how-modes { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+.how-mode-btn { all: unset; box-sizing: border-box; cursor: pointer; --mc: #ff9c1a; position: relative; width: 112px; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
+  background: linear-gradient(170deg, color-mix(in srgb, var(--mc) 45%, #0a1322), #0a1322 75%); box-shadow: 0 0 0 2px color-mix(in srgb, var(--mc) 55%, transparent), 0 10px 24px rgba(0, 0, 0, .45); transition: transform .2s, box-shadow .2s, filter .2s; filter: saturate(.7) brightness(.85); }
+.how-mode-btn img { position: absolute; left: 50%; bottom: 22px; height: 92%; transform: translateX(-50%); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .6)); pointer-events: none; }
+.how-mode-btn span { position: relative; z-index: 1; padding: 6px 8px 8px; background: linear-gradient(180deg, transparent, rgba(5, 10, 20, .95) 45%); font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 15px; line-height: 1; text-align: center; color: #fff; }
+.how-mode-btn:hover, .how-mode-btn:focus-visible { transform: translateY(-3px); filter: none; }
+.how-mode-btn[aria-selected="true"] { transform: translateY(-5px); filter: none; box-shadow: 0 0 0 3px var(--mc), 0 0 26px color-mix(in srgb, var(--mc) 55%, transparent), 0 14px 28px rgba(0, 0, 0, .5); }
+.how-mode-panel[hidden] { display: none; }
+.how-mode-panel { --mc: #ff9c1a; border-radius: 16px; padding: 16px; background: linear-gradient(160deg, color-mix(in srgb, var(--mc) 16%, transparent), transparent 70%); border: 1px solid color-mix(in srgb, var(--mc) 45%, transparent); }
+.how-mode-lead { margin: 0 0 12px; font-family: var(--f-display); font-weight: 700; font-size: 18px; letter-spacing: .02em; color: color-mix(in srgb, var(--mc) 60%, #fff); }
+.how-mode-panel .rule-box, .dm-rules-box .rule-box { background: linear-gradient(135deg, color-mix(in srgb, var(--mc) 16%, transparent), color-mix(in srgb, var(--mc) 3%, transparent)); border-color: color-mix(in srgb, var(--mc) 45%, transparent); }
+.how-mode-panel .rule-box h3, .dm-rules-box .rule-box h3 { color: color-mix(in srgb, var(--mc) 55%, #fff); }
+.m-push { --mc: #ff9c1a; } .m-ctrl { --mc: #2fd47a; } .m-dm { --mc: #ff3b54; } .m-quick { --mc: #3fa4ff; } .m-myst { --mc: #b07cff; }
+#dm-rules .dm-rules-box { --mc: #ff3b54; } #ctrl-rules .dm-rules-box { --mc: #2fd47a; }
+@media (max-width: 560px) { .how-modes { gap: 6px; flex-wrap: nowrap; } .how-mode-btn { width: calc(20% - 5px); } .how-mode-btn img { bottom: 26px; } .how-mode-btn span { font-size: 11px; padding: 5px 3px 6px; } .how-mode-panel { padding: 12px; } }
 
 /* ===== Control mode: square cards, 5x5 board, flip animation ===== */
 .sq { --cw: 150px; width: var(--cw); aspect-ratio: 1; position: relative; container-type: inline-size; flex: none; border-radius: 7%; background: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 8px 20px rgba(0, 0, 0, .45); user-select: none; }
@@ -1323,7 +1342,7 @@ button, .card, .slot { touch-action: manipulation; }
   <section class="screen" id="scr-howto" hidden>
     <div class="page">
       <button class="back-link" data-go="menu">‹ Back</button>
-      <div class="page-head"><div><h2>How to play</h2><p>Pick a mode to read its rules.</p></div></div>
+      <div class="page-head"><div><h2>How to play</h2><p>The general rules come first, then each mode.</p></div></div>
       <div class="mode-pick" hidden><div class="seg" id="howto-mode"><button data-v="push" aria-pressed="true">Push</button><button data-v="control">Mayhem</button></div></div>
       <div class="how-sec" id="how-push">
       <figure class="how-pic"><img id="how-pic-push" alt="A Push battle: your hero against the enemy's face-down card, the robot track above, your hand below."><figcaption>Push: both heroes go face up, higher Power wins, and the winner moves the robot one step. Cards with a blue Reserve tag stayed in your hand a round.</figcaption></figure>
@@ -1333,8 +1352,9 @@ button, .card, .slot { touch-action: manipulation; }
         <li><h3>Reveal</h3><p>Both heroes flip face up at the same time.</p></li>
         <li><h3>Abilities</h3><p>Each hero’s ability fires. Some raise Power, some lower the enemy’s, some bend the rules. Unblockable abilities go through barriers. Heroes with no ability simply have more Power.</p></li>
         <li><h3>Compare Power</h3><p>Higher Power wins the fight. Equal Power is a draw.</p></li>
-        <li><h3>Push</h3><p>The winner moves the robot 1 step toward the enemy base.</p></li>
+        <li><h3>Score</h3><p>The winner scores for the mode you’re playing. In Push, the robot moves 1 step toward the enemy base.</p></li>
       </ol>
+      <h2 class="how-h">General rules</h2>
       <div class="rule-row">
         <div class="rule-box">
           <h3>Your Reserve is in your hand</h3>
@@ -1358,15 +1378,29 @@ button, .card, .slot { touch-action: manipulation; }
             <li><b>Debuff:</b> anything that lowers a hero’s Power.</li>
           </ul>
         </div>
+      </div>
+      <h2 class="how-h">Game modes</h2>
+      <p class="how-sub">Tap a mode to see its rules.</p>
+      <div class="how-modes" id="how-modes" role="tablist"></div>
+      <div class="how-mode-panels">
+        <div class="how-mode-panel m-push" data-mode="standard" hidden>
+          <p class="how-mode-lead">Win battles to push the robot into the enemy base.</p>
+          <div class="rule-row">
         <div class="rule-box">
-          <h3>Quick Play mode</h3>
+          <h3>Winning in Push</h3>
           <ul>
-            <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
-            <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
-            <li>On a later round, play either your new card or your Reserve card.</li>
-            <li>Pick Push, Control, Deathmatch, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+            <li>The robot starts in the middle.</li>
+            <li>Push it all the way to the enemy base to win.</li>
+            <li>If the enemy pushes it to your base, you lose.</li>
+            <li>Right-click a card (or press and hold on a phone) to inspect it and see its buffs and debuffs.</li>
+            <li>After 15 rounds (20 in Mystery Hero), whoever has the robot on the other side wins. If it’s in the middle, it’s a draw.</li>
           </ul>
         </div>
+          </div>
+        </div>
+        <div class="how-mode-panel m-ctrl" data-mode="control" hidden>
+          <p class="how-mode-lead">No robot. Win turns to take rounds, and win 2 rounds.</p>
+          <div class="rule-row">
         <div class="rule-box" id="how-ctrl-rules">
           <h3>Control mode</h3>
           <ul>
@@ -1390,11 +1424,17 @@ button, .card, .slot { touch-action: manipulation; }
             <li><b>Freja</b> and other “if you’re losing” cards check the turn score. A card that wins the game wins the round instead.</li>
           </ul>
         </div>
+          </div>
+        </div>
+        <div class="how-mode-panel m-dm" data-mode="deathmatch" hidden>
+          <p class="how-mode-lead">You against 3 bots. First to 4 points wins.</p>
+          <div class="rule-row">
         <div class="rule-box" id="how-dm-rules">
           <h3>Deathmatch mode</h3>
           <ul>
             <li>You against 3 bots. Each turn all 4 play 1 hero from a hand of 3 and reveal together.</li>
             <li>Abilities that hit the enemy hit <b>every</b> other hero on the table. Your own boosts check the strongest other hero.</li>
+            <li><b>Biggest target:</b> the hero with the highest starting Power gets −3 (all of them if tied).</li>
             <li>The highest Power after all abilities scores 1 point. A tie at the top scores nothing.</li>
             <li>First to 4 points wins. After 15 turns, the top score wins.</li>
           </ul>
@@ -1414,6 +1454,25 @@ button, .card, .slot { touch-action: manipulation; }
             <li>Effects that happen after the battle don’t apply yet: Next-hero buffs, discards, Tracer’s Recall, Jetpack Cat’s Rally and similar.</li>
           </ul>
         </div>
+          </div>
+        </div>
+        <div class="how-mode-panel m-quick" data-mode="quick" hidden>
+          <p class="how-mode-lead">1 card a round and a single Reserve slot.</p>
+          <div class="rule-row">
+        <div class="rule-box">
+          <h3>Quick Play mode</h3>
+          <ul>
+            <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
+            <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
+            <li>On a later round, play either your new card or your Reserve card.</li>
+            <li>Pick Push, Control, Deathmatch, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+          </ul>
+        </div>
+          </div>
+        </div>
+        <div class="how-mode-panel m-myst" data-mode="mystery" hidden>
+          <p class="how-mode-lead">No deck to pick: every draw is a random hero.</p>
+          <div class="rule-row">
         <div class="rule-box">
           <h3>Mystery Hero mode</h3>
           <ul>
@@ -1423,15 +1482,7 @@ button, .card, .slot { touch-action: manipulation; }
             <li>The match lasts up to 20 rounds.</li>
           </ul>
         </div>
-        <div class="rule-box">
-          <h3>Winning</h3>
-          <ul>
-            <li>The robot starts in the middle.</li>
-            <li>Push it all the way to the enemy base to win.</li>
-            <li>If the enemy pushes it to your base, you lose.</li>
-            <li>Right-click a card (or press and hold on a phone) to inspect it and see its buffs and debuffs.</li>
-            <li>After 15 rounds (20 in Mystery Hero), whoever has the robot on the other side wins. If it’s in the middle, it’s a draw.</li>
-          </ul>
+          </div>
         </div>
       </div>
       </div>
@@ -5176,6 +5227,12 @@ function dmCtx(i, extra = {}) {
    ability on minus with it hacked is the hit that enemy takes, so shields and barriers still block as usual.
    DM_HIT = 'rival' switches back to hitting only the rival. */
 var DM_HIT = 'all';
+/* Balance for 4-way fights: DM_BAL = { top: Power taken from the highest starting Power card(s), low: bonus for cards at or under lowAt }. */
+var DM_BAL = { top: 3, low: 0, lowAt: 4 }; // Syauqie 2026-11-08: sims picked −3 on the biggest card (win spread 23 → 14)
+function dmBalance(final, base) {
+  const hi = Math.max(...base);
+  return final.map((v, i) => Math.max(0, v - (base[i] === hi ? DM_BAL.top : 0) + (base[i] <= DM_BAL.lowAt ? DM_BAL.low : 0)));
+}
 function dmResolve(picks, ctxs) {
   const base = picks.map(dmBase), n = picks.length;
   const inp = (i, silenced) => ({ id: picks[i].id, bonus: picks[i].bonus || 0, silenced: !!(silenced || picks[i].silenced), ctx: ctxs[i] });
@@ -5183,7 +5240,7 @@ function dmResolve(picks, ctxs) {
     let r = -1; for (let j = 0; j < n; j++) if (j !== i && (r < 0 || base[j] > base[r])) r = j;
     return { rival: r, res: resolve({ p: inp(i), e: inp(r) }) };
   });
-  if (DM_HIT === 'rival') return { final: results.map(x => x.res.powers.p), results };
+  if (DM_HIT === 'rival') return { final: dmBalance(results.map(x => x.res.powers.p), base), results };
   const self = picks.map((c, i) => resolve({ p: inp(i), e: inp(results[i].rival, true) }).powers.p);
   const final = self.slice();
   for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
@@ -5191,7 +5248,7 @@ function dmResolve(picks, ctxs) {
     const on = resolve({ p: inp(i), e: inp(j) }).powers.e, off = resolve({ p: inp(i, true), e: inp(j) }).powers.e;
     final[j] += on - off;
   }
-  return { final: final.map(v => Math.max(0, v)), results };
+  return { final: dmBalance(final.map(v => Math.max(0, v)), base), results };
 }
 
 function newDM(deckId) {
@@ -5265,7 +5322,7 @@ async function dmTurn() {
   for (let i = 0; i < 4; i++) {
     const own = results[i].res.events.filter(ev => ev.side === 'p');
     const note = $(`.dm-seat[data-seat="${i}"] .dm-note`);
-    note.textContent = own.length ? ctrlWords(own[own.length - 1].text) : `vs ${HEROES[picks[results[i].rival].id].name}`;
+    note.textContent = (own.length ? ctrlWords(own[own.length - 1].text) : `vs ${HEROES[picks[results[i].rival].id].name}`) + (DM_BAL.top && base[i] === Math.max(...base) ? ` · Biggest target −${DM_BAL.top}` : '');
     setPower(els[i], final[i], base[i]);
     if (own.length) { fx(els[i], 'casting', 700); Sfx.ability(own[0].kind); }
     await dmWait(own.length ? 650 : 200);
@@ -5346,6 +5403,26 @@ if ($('#ctrl-rules-btn')) {
   $('#ctrl-rules-close').addEventListener('click', () => { Sfx.click(); $('#ctrl-rules').hidden = true; });
 }
 if ($('#dm-quit')) $('#dm-quit').addEventListener('click', () => { Sfx.init(); Sfx.click(); stopConfetti(); dmQuit('modes'); });
+
+/* How to play: one mini card per mode, in that mode's colour; tapping one shows its rules. */
+(function initHowModes() {
+  const row = $('#how-modes'); if (!row || typeof MODES === 'undefined') return;
+  const CLS = { standard: 'm-push', control: 'm-ctrl', deathmatch: 'm-dm', quick: 'm-quick', mystery: 'm-myst' };
+  const pick = id => {
+    $$('#how-modes .how-mode-btn').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === id)));
+    $$('.how-mode-panel').forEach(p => { p.hidden = p.dataset.mode !== id; });
+  };
+  for (const m of MODES) {
+    if (!CLS[m.id]) continue;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'how-mode-btn ' + CLS[m.id]; b.dataset.mode = m.id; b.setAttribute('role', 'tab');
+    const p = typeof PORTRAITS !== 'undefined' && PORTRAITS[m.art];
+    if (p) { const im = document.createElement('img'); im.alt = ''; im.src = p.src; b.appendChild(im); }
+    const t = document.createElement('span'); t.textContent = m.name; b.appendChild(t);
+    b.addEventListener('click', () => { Sfx.init(); Sfx.click(); pick(m.id); });
+    row.appendChild(b);
+  }
+  pick('standard');
+})();
 
 /* ---------- Online play with a friend ----------
    Two browsers connect directly over WebRTC (PeerJS). The free PeerJS service only introduces

@@ -25,6 +25,12 @@ function dmCtx(i, extra = {}) {
    ability on minus with it hacked is the hit that enemy takes, so shields and barriers still block as usual.
    DM_HIT = 'rival' switches back to hitting only the rival. */
 var DM_HIT = 'all';
+/* Balance for 4-way fights: DM_BAL = { top: Power taken from the highest starting Power card(s), low: bonus for cards at or under lowAt }. */
+var DM_BAL = { top: 3, low: 0, lowAt: 4 }; // Syauqie 2026-11-08: sims picked −3 on the biggest card (win spread 23 → 14)
+function dmBalance(final, base) {
+  const hi = Math.max(...base);
+  return final.map((v, i) => Math.max(0, v - (base[i] === hi ? DM_BAL.top : 0) + (base[i] <= DM_BAL.lowAt ? DM_BAL.low : 0)));
+}
 function dmResolve(picks, ctxs) {
   const base = picks.map(dmBase), n = picks.length;
   const inp = (i, silenced) => ({ id: picks[i].id, bonus: picks[i].bonus || 0, silenced: !!(silenced || picks[i].silenced), ctx: ctxs[i] });
@@ -32,7 +38,7 @@ function dmResolve(picks, ctxs) {
     let r = -1; for (let j = 0; j < n; j++) if (j !== i && (r < 0 || base[j] > base[r])) r = j;
     return { rival: r, res: resolve({ p: inp(i), e: inp(r) }) };
   });
-  if (DM_HIT === 'rival') return { final: results.map(x => x.res.powers.p), results };
+  if (DM_HIT === 'rival') return { final: dmBalance(results.map(x => x.res.powers.p), base), results };
   const self = picks.map((c, i) => resolve({ p: inp(i), e: inp(results[i].rival, true) }).powers.p);
   const final = self.slice();
   for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
@@ -40,7 +46,7 @@ function dmResolve(picks, ctxs) {
     const on = resolve({ p: inp(i), e: inp(j) }).powers.e, off = resolve({ p: inp(i, true), e: inp(j) }).powers.e;
     final[j] += on - off;
   }
-  return { final: final.map(v => Math.max(0, v)), results };
+  return { final: dmBalance(final.map(v => Math.max(0, v)), base), results };
 }
 
 function newDM(deckId) {
@@ -114,7 +120,7 @@ async function dmTurn() {
   for (let i = 0; i < 4; i++) {
     const own = results[i].res.events.filter(ev => ev.side === 'p');
     const note = $(`.dm-seat[data-seat="${i}"] .dm-note`);
-    note.textContent = own.length ? ctrlWords(own[own.length - 1].text) : `vs ${HEROES[picks[results[i].rival].id].name}`;
+    note.textContent = (own.length ? ctrlWords(own[own.length - 1].text) : `vs ${HEROES[picks[results[i].rival].id].name}`) + (DM_BAL.top && base[i] === Math.max(...base) ? ` · Biggest target −${DM_BAL.top}` : '');
     setPower(els[i], final[i], base[i]);
     if (own.length) { fx(els[i], 'casting', 700); Sfx.ability(own[0].kind); }
     await dmWait(own.length ? 650 : 200);
@@ -195,3 +201,23 @@ if ($('#ctrl-rules-btn')) {
   $('#ctrl-rules-close').addEventListener('click', () => { Sfx.click(); $('#ctrl-rules').hidden = true; });
 }
 if ($('#dm-quit')) $('#dm-quit').addEventListener('click', () => { Sfx.init(); Sfx.click(); stopConfetti(); dmQuit('modes'); });
+
+/* How to play: one mini card per mode, in that mode's colour; tapping one shows its rules. */
+(function initHowModes() {
+  const row = $('#how-modes'); if (!row || typeof MODES === 'undefined') return;
+  const CLS = { standard: 'm-push', control: 'm-ctrl', deathmatch: 'm-dm', quick: 'm-quick', mystery: 'm-myst' };
+  const pick = id => {
+    $$('#how-modes .how-mode-btn').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === id)));
+    $$('.how-mode-panel').forEach(p => { p.hidden = p.dataset.mode !== id; });
+  };
+  for (const m of MODES) {
+    if (!CLS[m.id]) continue;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'how-mode-btn ' + CLS[m.id]; b.dataset.mode = m.id; b.setAttribute('role', 'tab');
+    const p = typeof PORTRAITS !== 'undefined' && PORTRAITS[m.art];
+    if (p) { const im = document.createElement('img'); im.alt = ''; im.src = p.src; b.appendChild(im); }
+    const t = document.createElement('span'); t.textContent = m.name; b.appendChild(t);
+    b.addEventListener('click', () => { Sfx.init(); Sfx.click(); pick(m.id); });
+    row.appendChild(b);
+  }
+  pick('standard');
+})();

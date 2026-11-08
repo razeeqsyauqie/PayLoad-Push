@@ -176,7 +176,7 @@
   <section class="screen" id="scr-howto" hidden>
     <div class="page">
       <button class="back-link" data-go="menu">‹ Back</button>
-      <div class="page-head"><div><h2>How to play</h2><p>Pick a mode to read its rules.</p></div></div>
+      <div class="page-head"><div><h2>How to play</h2><p>The general rules come first, then each mode.</p></div></div>
       <div class="mode-pick" hidden><div class="seg" id="howto-mode"><button data-v="push" aria-pressed="true">Push</button><button data-v="control">Mayhem</button></div></div>
       <div class="how-sec" id="how-push">
       <figure class="how-pic"><img id="how-pic-push" alt="A Push battle: your hero against the enemy's face-down card, the robot track above, your hand below."><figcaption>Push: both heroes go face up, higher Power wins, and the winner moves the robot one step. Cards with a blue Reserve tag stayed in your hand a round.</figcaption></figure>
@@ -186,8 +186,9 @@
         <li><h3>Reveal</h3><p>Both heroes flip face up at the same time.</p></li>
         <li><h3>Abilities</h3><p>Each hero’s ability fires. Some raise Power, some lower the enemy’s, some bend the rules. Unblockable abilities go through barriers. Heroes with no ability simply have more Power.</p></li>
         <li><h3>Compare Power</h3><p>Higher Power wins the fight. Equal Power is a draw.</p></li>
-        <li><h3>Push</h3><p>The winner moves the robot 1 step toward the enemy base.</p></li>
+        <li><h3>Score</h3><p>The winner scores for the mode you’re playing. In Push, the robot moves 1 step toward the enemy base.</p></li>
       </ol>
+      <h2 class="how-h">General rules</h2>
       <div class="rule-row">
         <div class="rule-box">
           <h3>Your Reserve is in your hand</h3>
@@ -211,15 +212,29 @@
             <li><b>Debuff:</b> anything that lowers a hero’s Power.</li>
           </ul>
         </div>
+      </div>
+      <h2 class="how-h">Game modes</h2>
+      <p class="how-sub">Tap a mode to see its rules.</p>
+      <div class="how-modes" id="how-modes" role="tablist"></div>
+      <div class="how-mode-panels">
+        <div class="how-mode-panel m-push" data-mode="standard" hidden>
+          <p class="how-mode-lead">Win battles to push the robot into the enemy base.</p>
+          <div class="rule-row">
         <div class="rule-box">
-          <h3>Quick Play mode</h3>
+          <h3>Winning in Push</h3>
           <ul>
-            <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
-            <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
-            <li>On a later round, play either your new card or your Reserve card.</li>
-            <li>Pick Push, Control, Deathmatch, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+            <li>The robot starts in the middle.</li>
+            <li>Push it all the way to the enemy base to win.</li>
+            <li>If the enemy pushes it to your base, you lose.</li>
+            <li>Right-click a card (or press and hold on a phone) to inspect it and see its buffs and debuffs.</li>
+            <li>After 15 rounds (20 in Mystery Hero), whoever has the robot on the other side wins. If it’s in the middle, it’s a draw.</li>
           </ul>
         </div>
+          </div>
+        </div>
+        <div class="how-mode-panel m-ctrl" data-mode="control" hidden>
+          <p class="how-mode-lead">No robot. Win turns to take rounds, and win 2 rounds.</p>
+          <div class="rule-row">
         <div class="rule-box" id="how-ctrl-rules">
           <h3>Control mode</h3>
           <ul>
@@ -243,11 +258,17 @@
             <li><b>Freja</b> and other “if you’re losing” cards check the turn score. A card that wins the game wins the round instead.</li>
           </ul>
         </div>
+          </div>
+        </div>
+        <div class="how-mode-panel m-dm" data-mode="deathmatch" hidden>
+          <p class="how-mode-lead">You against 3 bots. First to 4 points wins.</p>
+          <div class="rule-row">
         <div class="rule-box" id="how-dm-rules">
           <h3>Deathmatch mode</h3>
           <ul>
             <li>You against 3 bots. Each turn all 4 play 1 hero from a hand of 3 and reveal together.</li>
             <li>Abilities that hit the enemy hit <b>every</b> other hero on the table. Your own boosts check the strongest other hero.</li>
+            <li><b>Biggest target:</b> the hero with the highest starting Power gets −3 (all of them if tied).</li>
             <li>The highest Power after all abilities scores 1 point. A tie at the top scores nothing.</li>
             <li>First to 4 points wins. After 15 turns, the top score wins.</li>
           </ul>
@@ -267,6 +288,25 @@
             <li>Effects that happen after the battle don’t apply yet: Next-hero buffs, discards, Tracer’s Recall, Jetpack Cat’s Rally and similar.</li>
           </ul>
         </div>
+          </div>
+        </div>
+        <div class="how-mode-panel m-quick" data-mode="quick" hidden>
+          <p class="how-mode-lead">1 card a round and a single Reserve slot.</p>
+          <div class="rule-row">
+        <div class="rule-box">
+          <h3>Quick Play mode</h3>
+          <ul>
+            <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
+            <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
+            <li>On a later round, play either your new card or your Reserve card.</li>
+            <li>Pick Push, Control, Deathmatch, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+          </ul>
+        </div>
+          </div>
+        </div>
+        <div class="how-mode-panel m-myst" data-mode="mystery" hidden>
+          <p class="how-mode-lead">No deck to pick: every draw is a random hero.</p>
+          <div class="rule-row">
         <div class="rule-box">
           <h3>Mystery Hero mode</h3>
           <ul>
@@ -276,15 +316,7 @@
             <li>The match lasts up to 20 rounds.</li>
           </ul>
         </div>
-        <div class="rule-box">
-          <h3>Winning</h3>
-          <ul>
-            <li>The robot starts in the middle.</li>
-            <li>Push it all the way to the enemy base to win.</li>
-            <li>If the enemy pushes it to your base, you lose.</li>
-            <li>Right-click a card (or press and hold on a phone) to inspect it and see its buffs and debuffs.</li>
-            <li>After 15 rounds (20 in Mystery Hero), whoever has the robot on the other side wins. If it’s in the middle, it’s a draw.</li>
-          </ul>
+          </div>
         </div>
       </div>
       </div>
