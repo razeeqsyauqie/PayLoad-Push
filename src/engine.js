@@ -37,7 +37,7 @@ const HEROES = Object.fromEntries([
   H('dmon', 'D.Mon Mech', 'tank', 10, '#7fb2ff', '#1c2f6b', 'Limit Break', '−4 unless Baby D.Mon was played.', { type: 'penalty', amount: 4, when: { played: 'dmon_baby' } }),
   H('hazard', 'Hazard', 'tank', 9, '#c58cf0', '#2e1640', 'Spike Guard', '−1 per Damage hero the enemy has played.', { type: 'decay', role: 'damage', per: 1 }), // Syauqie 2026-11-07: enemy side only, no cap
   // ---- Damage
-  H('soldier', 'Soldier: 76', 'damage', 7, '#5383cc', '#14203b', 'Biotic Field', 'Can’t be discarded.', NONE), // Syauqie 2026-11-08: took Wuyang's can't-be-discarded; still counts as a no-ability hero for Baptiste
+  H('soldier', 'Soldier: 76', 'damage', 7, '#5383cc', '#14203b', 'Biotic Field', 'In Reserve: can’t be discarded.', NONE), // Syauqie 2026-11-08: only protected while in Reserve (not in deck or fresh in hand); still counts as a no-ability hero for Baptiste
   H('cassidy', 'Cassidy', 'damage', 7, '#d27c45', '#4a2011', 'Deadeye', 'Discard enemy’s top card. Damage: +2, else −2.', { type: 'mill', amount: 2 }),
   H('genji', 'Genji', 'damage', 6, '#9af585', '#1a5832', 'Deflect', 'Debuffs and hacks on him hit the enemy.', { type: 'deflect' }),
   H('hanzo', 'Hanzo', 'damage', 6, '#7fb4ff', '#1b3260', 'Sonic Arrow', 'Hack an enemy Support. From Reserve: any hero.', { type: 'hack', when: { vsRole: 'support', orFromReserve: true } }),
@@ -177,7 +177,9 @@ function condLabel(when) {
 // Soldier: 76 can't be discarded by any ability (was Wuyang until 2026-11-08).
 // Ashe's pick when nobody chooses (AI, sims): B.O.B. first, else the weakest card.
 const ashePick = cards => cards.find(c => c.id === 'bob') || (cards.length ? cards.reduce((a, b) => (b.power < a.power ? b : a)) : null);
-const UNDISCARDABLE = id => id === 'soldier';
+// Soldier: 76 can't be discarded while in Reserve (held in hand for a round, or the Classic Reserve slot).
+// In the deck or freshly drawn he can be. Pass the card (or a view with .held); inRes forces Reserve.
+const UNDISCARDABLE = (c, inRes) => !!c && c.id === 'soldier' && !!(inRes || c.held);
 function nextAmount(fx, c) {
   if (fx.perBehind) return Math.max(1, -(c.steps || 0));
   if (fx.perDiscard) return fx.perDiscard === true ? c.discards || 0 : Math.min(fx.perDiscard, c.discards || 0);
@@ -348,7 +350,7 @@ function resolve(input, rng = Math.random) {
     if (card.id === 'bob') gain(owner, card.power, 'B.O.B. is discarded and joins the fight! +' + card.power + ' Power.', 'boost', 'B.O.B. · Get Him, B.O.B.!');
     wuyangPlay(s);
   };
-  const pool = (list, side) => (list || []).filter(c => !UNDISCARDABLE(c.id) && !lostNow[side].some(x => x.uid === c.uid));
+  const pool = (list, side) => (list || []).filter(c => !UNDISCARDABLE(c) && !lostNow[side].some(x => x.uid === c.uid));
   for (const s of ['p', 'e']) {
     const me = S[s], t = other(s), fx = me.fx;
     if (!fx) continue;
@@ -510,12 +512,12 @@ const mainReserve = S => { const h = heldCards(S); return h.length ? h.reduce((a
 function takeCard(S, c) { if (S.hand) S.hand.splice(S.hand.indexOf(c), 1); else S.reserve = null; }
 function putCard(S, c) { if (S.hand) { c.held = true; S.hand.push(c); } else S.reserve = c; }
 /* What a side knows about the enemy's Reserve. */
-const foeView = Fo => { const h = heldCards(Fo), m = mainReserve(Fo); return { foeReservePower: m ? cardPower(m) : null, foeReserve: h.map(c => ({ uid: c.uid, id: c.id, power: cardPower(c) })), foeHand: (Fo.hand || h).map(c => ({ uid: c.uid, id: c.id, power: cardPower(c) })), foeTop: Fo.deck && Fo.deck.length ? Fo.deck[Fo.deck.length - 1].id : null }; };
+const foeView = Fo => { const h = heldCards(Fo), m = mainReserve(Fo); return { foeReservePower: m ? cardPower(m) : null, foeReserve: h.map(c => ({ uid: c.uid, id: c.id, power: cardPower(c) })), foeHand: (Fo.hand || h).map(c => ({ uid: c.uid, id: c.id, power: cardPower(c), held: !Fo.hand || !!c.held })), foeTop: Fo.deck && Fo.deck.length ? Fo.deck[Fo.deck.length - 1].id : null }; };
 const HAND_SIZE = 3;
 function canHold(S) { return S.hand ? S.hand.length < HAND_SIZE : !S.reserve; }
 function reserveView(S) {
   const h = heldCards(S), m = mainReserve(S), bob = h.find(c => c.id === 'bob');
-  const view = c => ({ uid: c.uid, id: c.id, power: cardPower(c) });
+  const view = c => ({ uid: c.uid, id: c.id, power: cardPower(c), held: !S.hand || !!c.held });
   return { myReserve: h.map(view), myHand: (S.hand || heldCards(S)).map(view), myDiscards: S.myDiscards || 0, reserveFull: h.length > 0, reserveId: m ? m.id : null, reserveIds: h.map(c => c.id), reservePower: m ? cardPower(m) : null, bobPower: bob ? cardPower(bob) : null, pile: (S.discard || []).length, pileRoles: (S.discard || []).reduce((o, c) => (o[HEROES[c.id].role] = (o[HEROES[c.id].role] || 0) + 1, o), {}) };
 }
 
@@ -548,7 +550,7 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
     const me = sides[a.side];
     if (a.kind === 'discard') {
       const S = sides[a.of];
-      const h = (a.uid && S.hand ? S.hand : heldCards(S)).filter(x => a.quiet || !UNDISCARDABLE(x.id));
+      const h = (a.uid && S.hand ? S.hand : heldCards(S)).filter(x => a.quiet || !UNDISCARDABLE(x, !S.hand));
       const c = a.quiet ? h.find(x => x.id === 'bob') : a.uid ? h.find(x => x.uid === a.uid) : a.random ? h[Math.floor(rng() * h.length)] : h.length ? h.reduce((x, y) => (cardPower(y) > cardPower(x) ? y : x)) : null;
       if (!c) continue;
       takeCard(S, c); if (!a.quiet) c.burned = true; S.discard.push(c);
@@ -616,7 +618,7 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
         me.choice = { uids: picks.map(c => c.uid), amount: a.amount, by: a.by };
       }
     } else if (a.kind === 'mill') {
-      const foe = sides[a.of], c = foe.deck.length && !UNDISCARDABLE(foe.deck[foe.deck.length - 1].id) ? foe.deck.pop() : null;
+      const foe = sides[a.of], c = foe.deck.length ? foe.deck.pop() : null;
       if (c) { c.burned = true; foe.discard.push(c); sides.p.discards = (sides.p.discards || 0) + 1; sides.e.discards = (sides.e.discards || 0) + 1; me.myDiscards = (me.myDiscards || 0) + 1;
         msgs.push({ side: a.side, of: a.of, text: a.by + ' discards ' + HEROES[c.id].name + ' from the top of ' + whose(a.of) + ' deck.' }); wuyang(a.side); if (HEROES.wuyang.fx.any) wuyang(a.side === 'p' ? 'e' : 'p'); }
     } else if (a.kind === 'weakenDeck') {

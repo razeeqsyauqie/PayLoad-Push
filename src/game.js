@@ -1406,7 +1406,7 @@ async function playRoundHand() {
   if (G.online) Net.send({ t: 'pick', round: G.round, uid: pCard.uid });
   // Ashe · The Viper: you pick which hand card she discards
   if (pCard.id === 'ashe' && !pCard.silenced) {
-    const opts = P.hand.filter(c => c !== pCard && !UNDISCARDABLE(c.id));
+    const opts = P.hand.filter(c => c !== pCard && !UNDISCARDABLE(c));
     P.discardPick = opts.length > 1 ? await pickDiscard(opts) : opts.length ? opts[0].uid : null;
     if (G.over) return;
     if (G.online) Net.send({ t: 'pick', round: 'a' + G.round, uid: P.discardPick });
