@@ -1725,7 +1725,7 @@ const HEROES = Object.fromEntries([
   H('dmon', 'D.Mon Mech', 'tank', 10, '#7fb2ff', '#1c2f6b', 'Limit Break', '−4 unless Baby D.Mon was played.', { type: 'penalty', amount: 4, when: { played: 'dmon_baby' } }),
   H('hazard', 'Hazard', 'tank', 9, '#c58cf0', '#2e1640', 'Spike Guard', '−1 per Damage hero the enemy has played.', { type: 'decay', role: 'damage', per: 1 }), // Syauqie 2026-11-07: enemy side only, no cap
   // ---- Damage
-  H('soldier', 'Soldier: 76', 'damage', 7, '#5383cc', '#14203b', 'No ability', 'No tricks, just Power.', NONE),
+  H('soldier', 'Soldier: 76', 'damage', 7, '#5383cc', '#14203b', 'Biotic Field', 'Can’t be discarded.', NONE), // Syauqie 2026-11-08: took Wuyang's can't-be-discarded; still counts as a no-ability hero for Baptiste
   H('cassidy', 'Cassidy', 'damage', 7, '#d27c45', '#4a2011', 'Deadeye', 'Discard enemy’s top card. Damage: +2, else −2.', { type: 'mill', amount: 2 }),
   H('genji', 'Genji', 'damage', 6, '#9af585', '#1a5832', 'Deflect', 'Debuffs and hacks on him hit the enemy.', { type: 'deflect' }),
   H('hanzo', 'Hanzo', 'damage', 6, '#7fb4ff', '#1b3260', 'Sonic Arrow', 'Hack an enemy Support. From Reserve: any hero.', { type: 'hack', when: { vsRole: 'support', orFromReserve: true } }),
@@ -1862,10 +1862,10 @@ function condLabel(when) {
 }
 
 /* How strong a "next hero" buff is when it's handed out. */
-// Wuyang can't be discarded by any ability.
+// Soldier: 76 can't be discarded by any ability (was Wuyang until 2026-11-08).
 // Ashe's pick when nobody chooses (AI, sims): B.O.B. first, else the weakest card.
 const ashePick = cards => cards.find(c => c.id === 'bob') || (cards.length ? cards.reduce((a, b) => (b.power < a.power ? b : a)) : null);
-const UNDISCARDABLE = id => id === 'wuyang';
+const UNDISCARDABLE = id => id === 'soldier';
 function nextAmount(fx, c) {
   if (fx.perBehind) return Math.max(1, -(c.steps || 0));
   if (fx.perDiscard) return fx.perDiscard === true ? c.discards || 0 : Math.min(fx.perDiscard, c.discards || 0);
