@@ -202,6 +202,7 @@ var PLAY_MODE = 'push'; // 'control' when the Control card was picked
 const MODES = [
   { id: 'standard', name: 'Push', art: 'reinhardt', text: 'Hold 3 cards. Pick your play each round and push the robot home.', tag: 'Hand of 3 · Pick a deck' },
   { id: 'control', name: 'Control', art: 'tracer', text: '3 rounds of up to 5 turns. First to win 2 rounds wins.', tag: 'Hand of 3 · Pick a deck', cls: 'ctrl', badge: 'New' },
+  { id: 'deathmatch', name: 'Deathmatch', art: 'reaper', text: 'You against 3 bots. Highest Power scores. First to 4 points wins.', tag: '4 players · Pick a deck', cls: 'dm', badge: 'New' },
   { id: 'quick', name: 'Quick Play', art: 'mei', text: 'Draw 1 card a round. Play it, or save it in your one Reserve slot.', tag: '1 card · Pick a deck', cls: 'blue' },
   { id: 'mystery', name: 'Mystery Hero', art: 'zenyatta', text: 'No deck. Draw random heroes, never the same one twice. Up to 20 rounds.', tag: 'Hand of 3 · Random draws', cls: 'myst', badge: 'New', glyph: '?' },
 ];
@@ -227,7 +228,7 @@ function renderModes() {
       if (m.soon) { Sfx.click(); el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); return; }
       Sfx.click();
       if (m.id === 'mystery') { PLAY_MODE = 'push'; newGame('mystery'); return; }
-      PLAY_MODE = m.id === 'control' ? 'control' : 'push';
+      PLAY_MODE = m.id === 'control' || m.id === 'deathmatch' ? m.id : 'push';
       settings.mode = m.id === 'quick' ? 'classic' : 'hand'; saveSettings(); syncModeDesc();
       show('decksel');
     });
@@ -251,7 +252,7 @@ function renderModes() {
 function show(id) {
   if (id === 'modes') setTimeout(renderModes);
   $$('.screen').forEach(s => { s.hidden = s.id !== 'scr-' + id; });
-  if (id === 'exit') Music.stop(); else Music.start(id === 'game' || id === 'control' ? 'game' : 'menu');
+  if (id === 'exit') Music.stop(); else Music.start(id === 'game' || id === 'control' || id === 'dm' ? 'game' : 'menu');
   const s = $('#scr-' + id); if (s) s.scrollTop = 0;
 }
 document.addEventListener('click', e => {
@@ -742,6 +743,7 @@ function swapResult(r) {
 /* online = { flip, seed, decks: { A, B }, goal } for a game against a friend (see net.js).
    The host is side A and the guest side B; each player sees themselves as 'p'. */
 function newGame(deckId, online) {
+  if (!online && deckId !== 'mystery' && PLAY_MODE === 'deathmatch' && typeof newDM === 'function') return newDM(deckId);
   gameId++;
   $('#endscreen').hidden = true;
   $('#picker').hidden = true;
@@ -1240,7 +1242,8 @@ const MODE_DESC = {
   classic: 'Quick Play: draw 1 card each round. Play it, or save it in your single Reserve slot.',
 };
 MODE_DESC.control = 'Control: 3 rounds, up to 5 turns each. Win more turns to take a round (3 wins ends it early). First to win 2 rounds wins the match.';
-function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[PLAY_MODE === 'control' ? 'control' : settings.mode] || MODE_DESC.hand; }
+MODE_DESC.deathmatch = 'Deathmatch: you against 3 bots, hand of 3. The highest Power each turn scores a point. First to 4 points wins.';
+function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[PLAY_MODE === 'control' || PLAY_MODE === 'deathmatch' ? PLAY_MODE : settings.mode] || MODE_DESC.hand; }
 
 /* ---------- Control mode: 3 rounds of up to 5 turns. 3 turn wins end a round early; after 5 turns more turn wins takes it, equal is a draw. First to 2 rounds wins. ---------- */
 const CTRL_TURNS = 5, CTRL_WIN = 3, CTRL_NEED = 2, CTRL_ROUNDS = 3; // 3 rounds at most
@@ -1253,7 +1256,7 @@ const CTRL_TEXT = {
   brigitte: 'If she loses: your next win scores 2.',
   mizuki: 'He and next hero +1 per point you’re behind.',
 };
-const ctrlCards = () => !!(G && G.ctrl && !G.over);
+const ctrlCards = () => !!((G && G.ctrl && !G.over) || (typeof DM !== 'undefined' && DM.live));
 function abilityView(h) { return ctrlCards() && CTRL_TEXT[h.id] ? { ...h, ability: { ...h.ability, text: CTRL_TEXT[h.id] } } : h; }
 function ctrlWords(t) {
   return t.replace(/Pushes the robot (\d+)!/, 'Scores $1!').replace('Carries the robot 2!', 'Scores 2!').replace('Pushes the robot 2.', 'Scores 2.')

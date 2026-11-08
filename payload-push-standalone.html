@@ -775,7 +775,7 @@ button, .card, .slot { touch-action: manipulation; }
 .mode-card.ctrl .mc-art::after { background: linear-gradient(180deg, rgba(255, 122, 46, .35), transparent 45%, rgba(31, 12, 6, .95)); }
 .mode-card.ctrl .pill { background: rgba(255, 122, 46, .18); color: #ffd9c2; border-color: rgba(255, 122, 46, .55); }
 .mode-card.ctrl .mc-badge { background: #ff7a2e; color: #2a0e02; box-shadow: 0 4px 14px rgba(255, 122, 46, .5); }
-@media (min-width: 1100px) { .mode-cards { flex-wrap: nowrap; } .mode-card { width: min(240px, 23vw); } }
+@media (min-width: 1100px) { .mode-cards { flex-wrap: nowrap; gap: 20px; } .mode-card { width: min(210px, 17vw); } .mode-card .mc-body h3 { font-size: 26px; } }
 
 /* Control mode match: a score strip replaces the robot track */
 #board.ctrlmode .payload, #board.ctrlmode .push-label { display: none; }
@@ -795,6 +795,48 @@ button, .card, .slot { touch-action: manipulation; }
 .cs-mid b { display: block; font-size: 26px; font-weight: 800; }
 .cs-mid small { color: var(--mute); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
 @media (max-width: 560px) { .cs-side { gap: 6px; font-size: 13px; } .cs-turns i { width: 11px; height: 11px; } .cs-rounds i { width: 13px; height: 13px; } .cs-mid b { font-size: 20px; } }
+
+/* Deathmatch card: crimson */
+.mode-card.dm .mc-inner { background: linear-gradient(170deg, #6e0f1c, #1a0508 70%); box-shadow: 0 0 0 3px #ff3b54, 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.dm:hover .mc-inner { box-shadow: 0 0 0 3px #ff9aa8, 0 0 40px rgba(255, 59, 84, .55), 0 24px 50px rgba(0, 0, 0, .55); }
+.mode-card.dm .mc-art::after { background: linear-gradient(180deg, rgba(255, 59, 84, .35), transparent 45%, rgba(26, 5, 8, .95)); }
+.mode-card.dm .pill { background: rgba(255, 59, 84, .18); color: #ffd0d6; border-color: rgba(255, 59, 84, .55); }
+.mode-card.dm .mc-badge { background: #ff3b54; color: #2a0308; box-shadow: 0 4px 14px rgba(255, 59, 84, .5); }
+
+/* Deathmatch match screen */
+.dm-wrap { max-width: 920px; margin: 0 auto; padding: 10px 16px 24px; display: flex; flex-direction: column; gap: 10px; min-height: 100dvh; }
+.dm-spacer { width: 44px; }
+.dm-bots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.dm-seat { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); min-width: 0; transition: box-shadow .3s; }
+.dm-seat.leader { box-shadow: 0 0 0 2px var(--gold); }
+.dm-head { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.dm-name { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--enemy); }
+.dm-seat.me .dm-name { color: var(--ally); }
+.dm-deck { color: var(--mute); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.dm-pips { display: flex; gap: 4px; }
+.dm-pips i { width: 11px; height: 11px; border-radius: 50%; background: rgba(255, 255, 255, .1); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25); }
+.dm-pips i.on { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+.dm-slot { --cw: clamp(70px, min(24vw, 14dvh), 130px); width: var(--cw); aspect-ratio: 5 / 7; border-radius: 10px; border: 2px dashed rgba(255, 255, 255, .15); display: grid; place-items: center; }
+.dm-slot .card { --cw: clamp(70px, min(24vw, 14dvh), 130px); }
+.dm-seat.me .dm-slot, .dm-seat.me .dm-slot .card { --cw: clamp(90px, min(28vw, 17dvh), 150px); }
+.dm-note { margin: 0; min-height: 2.6em; font-size: 12px; line-height: 1.3; color: var(--mute); text-align: center; }
+.dm-mid { position: relative; display: flex; justify-content: center; }
+.dm-mid .dm-seat { background: none; border: 0; }
+.dm-result { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%) scale(.8); opacity: 0; pointer-events: none; z-index: 6; padding: 10px 22px; border-radius: 14px; background: rgba(10, 19, 34, .92); border: 1px solid var(--line); text-align: center; font-family: var(--f-display); font-weight: 800; font-size: 28px; text-transform: uppercase; white-space: nowrap; transition: opacity .25s, transform .25s; }
+.dm-result small { display: block; font-size: 13px; color: var(--mute); letter-spacing: .06em; }
+.dm-result.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.dm-result.ally { color: var(--ally); } .dm-result.enemy { color: var(--enemy); }
+.dm-hint { margin: 0; min-height: 1.3em; text-align: center; color: var(--mute); font-size: 14px; }
+.dm-hand { display: flex; justify-content: center; gap: 10px; }
+.dm-hand .card { --cw: clamp(90px, min(28vw, 18dvh), 150px); cursor: pointer; transition: transform .15s; }
+.dm-hand .card:hover { transform: translateY(-6px); }
+.dm-held { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); z-index: 5; padding: 1px 8px; border-radius: 99px; background: #3a7bd5; color: #fff; font-family: var(--f-display); font-weight: 700; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.dm-slot .card.won { box-shadow: 0 0 0 3px var(--gold), 0 0 30px rgba(255, 211, 107, .5); border-radius: 8px; }
+.dm-slot .card.lost { filter: brightness(.6); }
+.dm-standings { list-style: none; padding: 0; margin: 10px auto 16px; max-width: 260px; text-align: left; }
+.dm-standings li { display: flex; justify-content: space-between; padding: 4px 10px; border-radius: 8px; }
+.dm-standings li.me { background: rgba(60, 200, 255, .12); color: var(--ally); }
+@media (max-width: 560px) { .dm-bots { gap: 6px; } .dm-seat { padding: 6px 4px; } .dm-name { font-size: 13px; } .dm-result { font-size: 22px; } .dm-hand { gap: 6px; } }
 
 /* ===== Control mode: square cards, 5x5 board, flip animation ===== */
 .sq { --cw: 150px; width: var(--cw); aspect-ratio: 1; position: relative; container-type: inline-size; flex: none; border-radius: 7%; background: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 8px 20px rgba(0, 0, 0, .45); user-select: none; }
@@ -1245,6 +1287,21 @@ button, .card, .slot { touch-action: manipulation; }
     </div>
   </section>
 
+  <!-- DEATHMATCH -->
+  <section class="screen game" id="scr-dm" hidden>
+    <div class="dm-wrap">
+      <div class="topbar">
+        <button class="icon-btn" id="dm-quit" aria-label="Back to modes"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="round-label" id="dm-turn"></div>
+        <span class="dm-spacer"></span>
+      </div>
+      <div class="dm-bots"><div class="dm-seat" data-seat="1"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-seat" data-seat="2"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-seat" data-seat="3"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div></div>
+      <div class="dm-mid"><div class="dm-seat me" data-seat="0"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-result" id="dm-result"></div></div>
+      <p class="dm-hint" id="dm-hint"></p>
+      <div class="dm-hand" id="dm-hand"></div>
+    </div>
+    <div class="overlay" id="dm-end" hidden></div>
+  </section>
   <!-- HOW TO PLAY -->
   <section class="screen" id="scr-howto" hidden>
     <div class="page">
@@ -1290,7 +1347,7 @@ button, .card, .slot { touch-action: manipulation; }
             <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
             <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
             <li>On a later round, play either your new card or your Reserve card.</li>
-            <li>Pick Push, Control, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+            <li>Pick Push, Control, Deathmatch, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
           </ul>
         </div>
         <div class="rule-box">
@@ -1314,6 +1371,15 @@ button, .card, .slot { touch-action: manipulation; }
             <li><b>Brigitte:</b> if she loses, your next win scores 2.</li>
             <li><b>Mizuki:</b> he and your next hero get +1 per point you’re behind.</li>
             <li><b>Freja</b> and other “if you’re losing” cards check the turn score. A card that wins the game wins the round instead.</li>
+          </ul>
+        </div>
+        <div class="rule-box">
+          <h3>Deathmatch mode</h3>
+          <ul>
+            <li>You against 3 bots. Each turn all 4 play 1 hero from a hand of 3 and reveal together.</li>
+            <li>Each hero duels the strongest other hero on the table, so its ability fires against that rival.</li>
+            <li>The highest Power after the duels scores 1 point. A tie at the top scores nothing.</li>
+            <li>First to 4 points wins. After 15 turns, the top score wins. Robot abilities use their Control versions.</li>
           </ul>
         </div>
         <div class="rule-box">
@@ -2585,6 +2651,7 @@ var PLAY_MODE = 'push'; // 'control' when the Control card was picked
 const MODES = [
   { id: 'standard', name: 'Push', art: 'reinhardt', text: 'Hold 3 cards. Pick your play each round and push the robot home.', tag: 'Hand of 3 · Pick a deck' },
   { id: 'control', name: 'Control', art: 'tracer', text: '3 rounds of up to 5 turns. First to win 2 rounds wins.', tag: 'Hand of 3 · Pick a deck', cls: 'ctrl', badge: 'New' },
+  { id: 'deathmatch', name: 'Deathmatch', art: 'reaper', text: 'You against 3 bots. Highest Power scores. First to 4 points wins.', tag: '4 players · Pick a deck', cls: 'dm', badge: 'New' },
   { id: 'quick', name: 'Quick Play', art: 'mei', text: 'Draw 1 card a round. Play it, or save it in your one Reserve slot.', tag: '1 card · Pick a deck', cls: 'blue' },
   { id: 'mystery', name: 'Mystery Hero', art: 'zenyatta', text: 'No deck. Draw random heroes, never the same one twice. Up to 20 rounds.', tag: 'Hand of 3 · Random draws', cls: 'myst', badge: 'New', glyph: '?' },
 ];
@@ -2610,7 +2677,7 @@ function renderModes() {
       if (m.soon) { Sfx.click(); el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); return; }
       Sfx.click();
       if (m.id === 'mystery') { PLAY_MODE = 'push'; newGame('mystery'); return; }
-      PLAY_MODE = m.id === 'control' ? 'control' : 'push';
+      PLAY_MODE = m.id === 'control' || m.id === 'deathmatch' ? m.id : 'push';
       settings.mode = m.id === 'quick' ? 'classic' : 'hand'; saveSettings(); syncModeDesc();
       show('decksel');
     });
@@ -2634,7 +2701,7 @@ function renderModes() {
 function show(id) {
   if (id === 'modes') setTimeout(renderModes);
   $$('.screen').forEach(s => { s.hidden = s.id !== 'scr-' + id; });
-  if (id === 'exit') Music.stop(); else Music.start(id === 'game' || id === 'control' ? 'game' : 'menu');
+  if (id === 'exit') Music.stop(); else Music.start(id === 'game' || id === 'control' || id === 'dm' ? 'game' : 'menu');
   const s = $('#scr-' + id); if (s) s.scrollTop = 0;
 }
 document.addEventListener('click', e => {
@@ -3125,6 +3192,7 @@ function swapResult(r) {
 /* online = { flip, seed, decks: { A, B }, goal } for a game against a friend (see net.js).
    The host is side A and the guest side B; each player sees themselves as 'p'. */
 function newGame(deckId, online) {
+  if (!online && deckId !== 'mystery' && PLAY_MODE === 'deathmatch' && typeof newDM === 'function') return newDM(deckId);
   gameId++;
   $('#endscreen').hidden = true;
   $('#picker').hidden = true;
@@ -3623,7 +3691,8 @@ const MODE_DESC = {
   classic: 'Quick Play: draw 1 card each round. Play it, or save it in your single Reserve slot.',
 };
 MODE_DESC.control = 'Control: 3 rounds, up to 5 turns each. Win more turns to take a round (3 wins ends it early). First to win 2 rounds wins the match.';
-function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[PLAY_MODE === 'control' ? 'control' : settings.mode] || MODE_DESC.hand; }
+MODE_DESC.deathmatch = 'Deathmatch: you against 3 bots, hand of 3. The highest Power each turn scores a point. First to 4 points wins.';
+function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc'); if (d) d.textContent = MODE_DESC[PLAY_MODE === 'control' || PLAY_MODE === 'deathmatch' ? PLAY_MODE : settings.mode] || MODE_DESC.hand; }
 
 /* ---------- Control mode: 3 rounds of up to 5 turns. 3 turn wins end a round early; after 5 turns more turn wins takes it, equal is a draw. First to 2 rounds wins. ---------- */
 const CTRL_TURNS = 5, CTRL_WIN = 3, CTRL_NEED = 2, CTRL_ROUNDS = 3; // 3 rounds at most
@@ -3636,7 +3705,7 @@ const CTRL_TEXT = {
   brigitte: 'If she loses: your next win scores 2.',
   mizuki: 'He and next hero +1 per point you’re behind.',
 };
-const ctrlCards = () => !!(G && G.ctrl && !G.over);
+const ctrlCards = () => !!((G && G.ctrl && !G.over) || (typeof DM !== 'undefined' && DM.live));
 function abilityView(h) { return ctrlCards() && CTRL_TEXT[h.id] ? { ...h, ability: { ...h.ability, text: CTRL_TEXT[h.id] } } : h; }
 function ctrlWords(t) {
   return t.replace(/Pushes the robot (\d+)!/, 'Scores $1!').replace('Carries the robot 2!', 'Scores 2!').replace('Pushes the robot 2.', 'Scores 2.')
@@ -5044,6 +5113,169 @@ function initHowto() {
   });
 }
 initHowto();
+
+/* ===== Deathmatch: you and 3 bots, hand of 3. Everyone reveals 1 hero; the highest final Power scores a point. First to 4 wins. =====
+   Each hero duels the strongest other hero on the table (by starting Power): its ability and that rival's ability run through
+   the normal battle engine, and the hero's Power after that duel is what counts. Robot abilities use their Control (score) versions:
+   "ahead" and "behind" are measured against the top other score. Effects that last past the battle (Next buffs, discards) don't carry over. */
+const DM_GOAL = 4, DM_TURNS = 15, DM_HAND = 3;
+var DM = { live: false, token: 0, seats: [], turn: 0, pick: null };
+const dmWait = ms => { const t = DM.token; return new Promise((res, rej) => setTimeout(() => (t === DM.token ? res() : rej(ABORT)), T(ms))); };
+const dmBase = c => HEROES[c.id].power + (c.bonus || 0);
+
+function dmDraw(seat) {
+  if (!seat.deck.length) { seat.deck = shuffle(seat.discard); seat.discard = []; }
+  const c = seat.deck.pop();
+  if (c) c.held = false;
+  return c;
+}
+function dmCtx(i, extra = {}) {
+  const seat = DM.seats[i];
+  const top = Math.max(...DM.seats.filter((_, j) => j !== i).map(s => s.score));
+  const steps = seat.score - top;
+  return { behind: steps < 0, steps, ...reserveView(seat), wonLast: seat.won, lostLast: seat.lost, played: seat.played, foePlayed: [], turret: 0, next: [], curse: [], ...extra };
+}
+
+function newDM(deckId) {
+  DM.token++; gameId++;
+  if (G) G.over = true;
+  const others = shuffle(DECKS.map(d => d.id)).slice(0, 3);
+  const seat = (name, deckId, bot) => ({ name, deckId, bot, deck: makeDeck(deckId), hand: [], discard: [], played: [], score: 0, won: false, lost: false });
+  DM.seats = [seat('You', deckId, false), ...others.map((d, k) => seat('Bot ' + (k + 1), d, true))];
+  DM.seats.forEach((s, k) => { if (k) s.deckName = getDeck(s.deckId).name; });
+  DM.turn = 0; DM.live = true;
+  setPowerMode('hand');
+  $('#dm-end').hidden = true;
+  show('dm');
+  dmRender();
+  dmRun(DM.token);
+}
+
+async function dmRun(token) {
+  try {
+    await dmWait(300);
+    while (DM.live && token === DM.token) await dmTurn();
+  } catch (e) { if (e !== ABORT) console.error(e); }
+}
+
+function dmRender() {
+  const seats = DM.seats;
+  $('#dm-turn').innerHTML = `Turn <b>${Math.max(DM.turn, 1)}</b> / ${DM_TURNS} · first to ${DM_GOAL}`;
+  const pips = n => Array.from({ length: DM_GOAL }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
+  $$('.dm-seat').forEach(el => {
+    const i = +el.dataset.seat, s = seats[i];
+    el.querySelector('.dm-name').textContent = s.name;
+    el.querySelector('.dm-deck').textContent = i ? s.deckName : getDeck(s.deckId).name;
+    el.querySelector('.dm-pips').innerHTML = pips(s.score);
+    el.classList.toggle('leader', s.score > 0 && s.score === Math.max(...seats.map(x => x.score)));
+  });
+}
+function dmRenderHand() {
+  const wrap = $('#dm-hand'); wrap.innerHTML = '';
+  for (const c of DM.seats[0].hand) {
+    const el = cardEl(c);
+    if (c.held) el.insertAdjacentHTML('beforeend', '<span class="dm-held">Reserve</span>');
+    el.addEventListener('click', () => { if (DM.pick) { Sfx.init(); Sfx.click(); const f = DM.pick; DM.pick = null; f(c); } });
+    wrap.appendChild(el);
+  }
+}
+
+async function dmTurn() {
+  const seats = DM.seats;
+  DM.turn++;
+  for (const s of seats) { while (s.hand.length < DM_HAND) { const c = dmDraw(s); if (!c) break; s.hand.push(c); } }
+  $$('.dm-slot').forEach(el => { el.innerHTML = ''; el.classList.remove('won', 'lost'); });
+  $$('.dm-note').forEach(el => { el.textContent = ''; });
+  $('#dm-result').className = 'dm-result';
+  dmRender(); dmRenderHand(); Sfx.draw();
+  $('#dm-hint').textContent = 'Tap a hero to play it.';
+  const mine = await new Promise(res => { DM.pick = res; });
+  $('#dm-hint').textContent = '';
+  // bots choose with the normal AI
+  const picks = seats.map((s, i) => i === 0 ? mine : s.hand[aiChooseHand({ hand: s.hand, ctxFor: c => dmCtx(i, { fromReserve: !!c.held }) })]);
+  seats.forEach((s, i) => { s.hand = s.hand.filter(c => c !== picks[i]); });
+  dmRenderHand();
+  // everyone lays a card face down, then all flip
+  const els = picks.map((c, i) => { const el = cardEl(c, { down: i > 0 }); $(`.dm-seat[data-seat="${i}"] .dm-slot`).appendChild(el); return el; });
+  Sfx.flip(); await dmWait(500);
+  els.forEach(el => el.classList.remove('down')); Sfx.reveal();
+  await dmWait(600);
+
+  // each hero duels the strongest other hero on the table
+  const base = picks.map(dmBase);
+  const results = picks.map((c, i) => {
+    let r = -1; picks.forEach((d, j) => { if (j !== i && (r < 0 || base[j] > base[r])) r = j; });
+    const inP = { id: c.id, bonus: c.bonus || 0, ctx: dmCtx(i, { fromReserve: !!c.held }) };
+    const inE = { id: picks[r].id, bonus: picks[r].bonus || 0, ctx: dmCtx(r, { fromReserve: !!picks[r].held }) };
+    return { rival: r, res: resolve({ p: inP, e: inE }) };
+  });
+  const final = results.map(x => x.res.powers.p);
+  for (let i = 0; i < 4; i++) {
+    const own = results[i].res.events.filter(ev => ev.side === 'p');
+    const note = $(`.dm-seat[data-seat="${i}"] .dm-note`);
+    note.textContent = own.length ? ctrlWords(own[own.length - 1].text) : `vs ${HEROES[picks[results[i].rival].id].name}`;
+    setPower(els[i], final[i], base[i]);
+    if (own.length) { fx(els[i], 'casting', 700); Sfx.ability(own[0].kind); }
+    await dmWait(own.length ? 650 : 200);
+  }
+  await dmWait(400);
+
+  // the single highest Power scores
+  const top = Math.max(...final), tops = final.map((v, i) => v === top ? i : -1).filter(i => i >= 0);
+  const res = $('#dm-result');
+  let w = -1;
+  if (tops.length === 1) {
+    w = tops[0];
+    const rr = results[w].res;
+    let pts = rr.winner === 'p' ? Math.min(rr.push, DM_GOAL) : 1;
+    seats[w].score += pts;
+    els.forEach((el, i) => el.classList.add(i === w ? 'won' : 'lost'));
+    res.innerHTML = pts ? `${w === 0 ? 'You score' : seats[w].name + ' scores'}${pts > 1 ? ' ' + pts : ''}<small>${HEROES[picks[w].id].name} · ${top} Power</small>` : `Nobody scores<small>${HEROES[picks[w].id].name} won, but the score holds</small>`;
+    res.className = 'dm-result show ' + (w === 0 ? 'ally' : 'enemy');
+    if (w === 0) Sfx.win(); else Sfx.lose();
+  } else {
+    res.innerHTML = `Tie at the top<small>${top} Power · nobody scores</small>`;
+    res.className = 'dm-result show';
+    Sfx.draw0();
+  }
+  // Sigma: the leader loses 1 point
+  picks.forEach((c, i) => {
+    if (HEROES[c.id].fx && HEROES[c.id].fx.type === 'pull' && !results[i].res.hacked.p) {
+      const hi = Math.max(...seats.map(s => s.score)), lead = seats.filter(s => s.score === hi);
+      if (hi > 0 && lead.length === 1) { lead[0].score--; toast(`${seats[i].name === 'You' ? 'Your' : seats[i].name + '’s'} Sigma: ${lead[0].name === 'You' ? 'you lose' : lead[0].name + ' loses'} 1 point`); }
+    }
+  });
+  seats.forEach((s, i) => { s.won = i === w; s.lost = w >= 0 && i !== w; s.played.push(picks[i].id); s.discard.push(picks[i]); s.hand.forEach(c => { c.held = true; }); });
+  dmRender();
+  await dmWait(1500);
+
+  const best = Math.max(...seats.map(s => s.score)), leaders = seats.filter(s => s.score === best);
+  if (best >= DM_GOAL) return dmEnd(leaders[0]);
+  if (DM.turn >= DM_TURNS) return dmEnd(leaders.length === 1 ? leaders[0] : null, true);
+}
+
+function dmEnd(winner, timeUp) {
+  DM.live = false;
+  const seats = [...DM.seats].sort((a, b) => b.score - a.score);
+  const won = winner === DM.seats[0];
+  const title = winner ? (won ? 'Victory' : 'Defeat') : 'Draw';
+  const line = winner ? `${won ? 'You' : winner.name} reached ${winner.score} point${winner.score === 1 ? '' : 's'}${timeUp ? ` after ${DM_TURNS} turns` : ''}.` : `Turn ${DM_TURNS} is over and the top score is tied.`;
+  const end = $('#dm-end');
+  end.innerHTML = `<div class="end ${winner ? (won ? 'win' : 'lose') : 'draw'}"><h2>${title}</h2><p>${escapeHtml(line)}</p>
+    <ol class="dm-standings">${seats.map(s => `<li${s === DM.seats[0] ? ' class="me"' : ''}><span>${escapeHtml(s.name)}</span><b>${s.score}</b></li>`).join('')}</ol>
+    <div class="row"><button class="btn" id="dm-again">Play again</button><button class="btn ghost" id="dm-deck">Change deck</button><button class="btn ghost" id="dm-menu">Main menu</button></div></div>`;
+  end.hidden = false;
+  if (won) { Sfx.victory(); startConfetti(); } else if (winner) Sfx.defeat(); else Sfx.draw0();
+  $('#dm-again').onclick = () => { Sfx.click(); stopConfetti(); newDM(DM.seats[0].deckId); };
+  $('#dm-deck').onclick = () => { Sfx.click(); stopConfetti(); dmQuit('decksel'); };
+  $('#dm-menu').onclick = () => { Sfx.click(); stopConfetti(); dmQuit('menu'); };
+}
+function dmQuit(to) {
+  DM.token++; DM.live = false; DM.pick = null;
+  $('#dm-end').hidden = true;
+  show(to);
+}
+if ($('#dm-quit')) $('#dm-quit').addEventListener('click', () => { Sfx.init(); Sfx.click(); stopConfetti(); dmQuit('modes'); });
 
 /* ---------- Online play with a friend ----------
    Two browsers connect directly over WebRTC (PeerJS). The free PeerJS service only introduces

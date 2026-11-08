@@ -1,5 +1,5 @@
 /* Offline support: keep the game files so it opens without a connection. */
-const CACHE = 'payload-push-ca2b4e4764';
+const CACHE = 'payload-push-9da208ad84';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'peerjs.min.js'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

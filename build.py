@@ -22,6 +22,7 @@ body = f"""<style>
 {(d/'howto-pics.js').read_text() if (d/'howto-pics.js').exists() else ''}
 {(d/'herofx.js').read_text()}
 {(d/'control.js').read_text()}
+{(d/'dm.js').read_text() if (d/'dm.js').exists() else ''}
 {(d/'net.js').read_text()}
 </script>
 """

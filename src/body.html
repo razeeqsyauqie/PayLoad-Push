@@ -156,6 +156,21 @@
     </div>
   </section>
 
+  <!-- DEATHMATCH -->
+  <section class="screen game" id="scr-dm" hidden>
+    <div class="dm-wrap">
+      <div class="topbar">
+        <button class="icon-btn" id="dm-quit" aria-label="Back to modes"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="round-label" id="dm-turn"></div>
+        <span class="dm-spacer"></span>
+      </div>
+      <div class="dm-bots"><div class="dm-seat" data-seat="1"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-seat" data-seat="2"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-seat" data-seat="3"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div></div>
+      <div class="dm-mid"><div class="dm-seat me" data-seat="0"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-result" id="dm-result"></div></div>
+      <p class="dm-hint" id="dm-hint"></p>
+      <div class="dm-hand" id="dm-hand"></div>
+    </div>
+    <div class="overlay" id="dm-end" hidden></div>
+  </section>
   <!-- HOW TO PLAY -->
   <section class="screen" id="scr-howto" hidden>
     <div class="page">
@@ -201,7 +216,7 @@
             <li>Draw 1 card each round. Play it, or save it in your single Reserve slot.</li>
             <li>If you reserve your new card, you play the top card of your deck instead, sight unseen.</li>
             <li>On a later round, play either your new card or your Reserve card.</li>
-            <li>Pick Push, Control, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
+            <li>Pick Push, Control, Deathmatch, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
           </ul>
         </div>
         <div class="rule-box">
@@ -225,6 +240,15 @@
             <li><b>Brigitte:</b> if she loses, your next win scores 2.</li>
             <li><b>Mizuki:</b> he and your next hero get +1 per point you’re behind.</li>
             <li><b>Freja</b> and other “if you’re losing” cards check the turn score. A card that wins the game wins the round instead.</li>
+          </ul>
+        </div>
+        <div class="rule-box">
+          <h3>Deathmatch mode</h3>
+          <ul>
+            <li>You against 3 bots. Each turn all 4 play 1 hero from a hand of 3 and reveal together.</li>
+            <li>Each hero duels the strongest other hero on the table, so its ability fires against that rival.</li>
+            <li>The highest Power after the duels scores 1 point. A tie at the top scores nothing.</li>
+            <li>First to 4 points wins. After 15 turns, the top score wins. Robot abilities use their Control versions.</li>
           </ul>
         </div>
         <div class="rule-box">
