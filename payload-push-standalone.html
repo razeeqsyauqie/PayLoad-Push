@@ -1800,9 +1800,9 @@ function resolve(input, rng = Math.random) {
     if (immune(t)) { ev(t, 'barrier', 'Can’t be touched.', { target: t }); return false; }
     if (foe.suzu) { events.push({ side: t, kind: 'barrier', title: foe.suzu, text: 'Shields ' + foe.hero.name + '.', powers: snap(), target: t }); return false; }
     if (!bypass && foe.protected) { events.push({ side: t, kind: 'barrier', title: foe.protected, text: 'Shields ' + foe.hero.name + '.', powers: snap(), target: t }); return false; }
-    // Genji · Deflect: anything aimed at him (not Unblockable), even left from an earlier battle, hits the enemy hero instead
-    if (!bypass && has(t, 'deflect')) {
-      const back = src || other(t);
+    // Genji · Deflect: a blockable debuff from the enemy hero he is fighting hits that hero instead (old debuffs still land)
+    if (!bypass && src && has(t, 'deflect')) {
+      const back = src;
       S[back].power = Math.max(0, S[back].power - amt);
       ev(t, 'deflect', 'Sends it back! ' + S[back].hero.name + ' −' + amt + ' Power.', { target: back, delta: -amt });
       return false;
@@ -1826,7 +1826,7 @@ function resolve(input, rng = Math.random) {
   for (const t of ['p', 'e']) {
     for (const c of S[t].ctx.curse || []) {
       const title = c.by + ' · ' + c.name;
-      if (c.antiheal && !frozen && !immune(t)) S[has(t, 'deflect') ? other(t) : t].antiheal = title;
+      if (c.antiheal && !frozen && !immune(t)) S[t].antiheal = title;
       lower(t, c.amount, S[t].hero.name + ' −# Power.', 'weaken', null, false, title);
     }
   }
@@ -1950,6 +1950,7 @@ function resolve(input, rng = Math.random) {
       if (a > 0) { me.power -= a; ev(s, 'decay', '−' + a + ' Power from ' + (fx.both ? '' : 'enemy ') + ROLES[fx.role].label + ' heroes played.', { target: s, delta: -a }); }
     } else if (fx.type === 'curse') {
       if (fx.now) lower(t, fx.now, foe.hero.name + ' −# Power.', 'weaken', s, !!fx.bypass);
+      if (!fx.onWin && !fx.bypass && has(t, 'deflect')) ev(t, 'deflect', 'Sends ' + me.abName + ' back! ' + me.hero.name + '’s next ' + (fx.turns > 1 ? fx.turns + ' heroes get' : 'hero gets') + ' −' + fx.amount + '.', { target: s });
     } else if (fx.type === 'copyPower') {
       const v = me.ctx.foeReservePower;
       if (v != null && v > me.power) { const a = v - me.power; me.power = v; ev(s, 'boost', 'Copies ' + v + ' Power from the enemy’s Reserve card.', { target: s, delta: a }); }
@@ -2023,7 +2024,8 @@ function resolve(input, rng = Math.random) {
     }
     if (fx.type === 'hack' && fx.handHack && S[s].ctx.fromReserve) after.push({ kind: 'hackHand', side: s, of: t, by: S[s].hero.name, order: 6 });
     if (fx.type === 'hack' && fx.lingering) after.push({ kind: 'hackNext', side: s, of: t, by: S[s].hero.name, order: 6 });
-    if (fx.type === 'curse' && (!fx.onWin || winner === s)) after.push({ kind: 'curse', side: s, of: t, amount: fx.amount, antiheal: !!fx.antiheal, turns: fx.turns || 1, name: S[s].abName, by: S[s].hero.name, order: 6 });
+    // a lingering debuff thrown at Genji (Deflect) lands on the thrower's own side instead
+    if (fx.type === 'curse' && (!fx.onWin || winner === s)) after.push({ kind: 'curse', side: s, of: has(t, 'deflect') && !fx.bypass ? s : t, deflected: has(t, 'deflect') && !fx.bypass, amount: fx.amount, antiheal: !!fx.antiheal, turns: fx.turns || 1, name: S[s].abName, by: S[s].hero.name, order: 6 });
     if (fx.type === 'handSwing') after.push({ kind: 'handSwing', side: s, of: t, amount: fx.amount, by: S[s].hero.name, order: 5 });
     if (fx.type === 'turret') after.push({ kind: 'turret', side: s, of: t, amount: fx.reserveAmount && S[s].ctx.fromReserve ? fx.reserveAmount : fx.amount, by: S[s].hero.name, order: 6 });
   }
@@ -2182,7 +2184,7 @@ function applyAfter(r, sides, played, rng = Math.random, mine = 'p') {
       msgs.push({ side: a.side, of: a.of, text: a.by + ' keeps hacking: ' + whose(a.of) + ' next hero loses its ability too.' });
     } else if (a.kind === 'curse') {
       sides[a.of].curse.push({ amount: a.amount, antiheal: a.antiheal, turns: a.turns, name: a.name, by: a.by });
-      msgs.push({ side: a.side, of: a.of, text: a.by + ': ' + whose(a.of) + ' next ' + (a.turns > 1 ? a.turns + ' heroes get' : 'hero gets') + ' −' + a.amount + (a.antiheal ? ' and can’t gain Power.' : '.') });
+      msgs.push({ side: a.side, of: a.of, text: (a.deflected ? 'Genji deflects ' + a.name + '! ' : '') + a.by + ': ' + whose(a.of) + ' next ' + (a.turns > 1 ? a.turns + ' heroes get' : 'hero gets') + ' −' + a.amount + (a.antiheal ? ' and can’t gain Power.' : '.') });
     } else if (a.kind === 'turret') {
       sides[a.of].turret = (sides[a.of].turret || 0) + a.amount;
       msgs.push({ side: a.side, of: a.of, text: a.by + ' leaves a Turret: ' + whose(a.of) + ' next hero gets −' + a.amount + '.' });
