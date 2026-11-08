@@ -843,6 +843,9 @@ button, .card, .slot { touch-action: manipulation; }
 .dm-rules-box .rule-box { margin-bottom: 12px; }
 .dm-rules-box .btn { display: block; margin: 6px auto 0; }
 
+.icon-btn[hidden] { display: none !important; }
+#board.ctrlmode .topbar .round-label { margin-left: auto; margin-right: auto; }
+
 /* ===== Control mode: square cards, 5x5 board, flip animation ===== */
 .sq { --cw: 150px; width: var(--cw); aspect-ratio: 1; position: relative; container-type: inline-size; flex: none; border-radius: 7%; background: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 8px 20px rgba(0, 0, 0, .45); user-select: none; }
 .sq .art { position: absolute; inset: 1.4cqw; height: auto; border-radius: 5.8cqw; overflow: hidden; background: linear-gradient(160deg, var(--c1), var(--c2)); }
@@ -1356,7 +1359,7 @@ button, .card, .slot { touch-action: manipulation; }
             <li>Pick Push, Control, Deathmatch, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
           </ul>
         </div>
-        <div class="rule-box">
+        <div class="rule-box" id="how-ctrl-rules">
           <h3>Control mode</h3>
           <ul>
             <li>No robot. Up to 3 rounds: the first to win 2 rounds wins.</li>
@@ -1366,7 +1369,7 @@ button, .card, .slot { touch-action: manipulation; }
             <li>It plays like Push: 3 cards in hand, play 1 each turn.</li>
           </ul>
         </div>
-        <div class="rule-box">
+        <div class="rule-box" id="how-ctrl-cards">
           <h3>Card changes in Control</h3>
           <ul>
             <li>With no robot, the turn score takes its place. Cards show their Control text during a match.</li>
@@ -1383,17 +1386,18 @@ button, .card, .slot { touch-action: manipulation; }
           <h3>Deathmatch mode</h3>
           <ul>
             <li>You against 3 bots. Each turn all 4 play 1 hero from a hand of 3 and reveal together.</li>
-            <li>Each hero duels the strongest other hero on the table, so its ability fires against that rival.</li>
-            <li>The highest Power after the duels scores 1 point. A tie at the top scores nothing.</li>
+            <li>Abilities that hit the enemy hit <b>every</b> other hero on the table. Your own boosts check the strongest other hero.</li>
+            <li>The highest Power after all abilities scores 1 point. A tie at the top scores nothing.</li>
             <li>First to 4 points wins. After 15 turns, the top score wins.</li>
           </ul>
         </div>
         <div class="rule-box" id="how-dm-cards">
           <h3>Card changes in Deathmatch</h3>
           <ul>
-            <li><b>“Enemy”</b> means the hero your card duels: the strongest other hero on the table. Each card shows “vs …” under it.</li>
+            <li><b>“Enemy”</b> means every other hero on the table: a −2 hits all three. Steals take from each of them, but you gain only once.</li>
+            <li>Conditions like “vs Damage heroes” and your own gains check the strongest other hero.</li>
             <li><b>“You’re ahead / behind / losing”</b> compares your score with the top other score.</li>
-            <li><b>Reinhardt:</b> if he loses his duel while you’re ahead, nobody scores.</li>
+            <li><b>Reinhardt:</b> if he loses while you’re ahead, nobody scores.</li>
             <li><b>Wrecking Ball:</b> −1 Power per point you are apart from the top other score.</li>
             <li><b>Sigma:</b> after the turn, the leader loses 1 point.</li>
             <li><b>Mauga</b> and <b>Brigitte:</b> a win scores 2 points.</li>
@@ -1567,6 +1571,7 @@ button, .card, .slot { touch-action: manipulation; }
         <button class="icon-btn" id="btn-quit" aria-label="Back to menu"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="round-label push-label">Round <b id="round-no">1</b> / <span id="round-max">20</span></div>
         <div class="round-label ctrl-label" id="ctrl-label" hidden></div>
+        <button class="icon-btn dm-rules-btn ctrl-only" id="ctrl-rules-btn" aria-label="Control rules" hidden>?</button>
         <button class="icon-btn" id="btn-sound" aria-label="Toggle sound"></button>
       </div>
 
@@ -1624,6 +1629,7 @@ button, .card, .slot { touch-action: manipulation; }
 </div>
 
 <div class="overlay" id="endscreen" hidden></div>
+<div class="overlay" id="ctrl-rules" hidden><div class="dm-rules-box"><div class="dm-rules-body"></div><button class="btn" id="ctrl-rules-close">Got it</button></div></div>
 <div class="overlay inspect" id="inspect" hidden></div>
 <div class="overlay" id="picker" hidden></div>
 <canvas id="confetti" hidden></canvas>
@@ -3736,6 +3742,7 @@ function ctrlBoard() {
   const C = G && G.ctrl, box = $('#ctrl-score'), lab = $('#ctrl-label');
   if (!box || !lab) return;
   box.hidden = lab.hidden = !C;
+  const rb = $('#ctrl-rules-btn'); if (rb) rb.hidden = !C;
   if (!C) return;
   G.pos = C.w.p - C.w.e; // the score lead stands in for the robot, so robot abilities read it
   const pips = (n, of, cls) => Array.from({ length: of }, (_, i) => `<i class="${i < n ? cls : ''}"></i>`).join('');
@@ -5134,7 +5141,7 @@ function initHowto() {
 }
 initHowto();
 
-/* ===== Deathmatch: you and 3 bots, hand of 3. Everyone reveals 1 hero; the highest final Power scores a point. First to 4 wins. =====
+/* ===== Deathmatch: you and 3 bots, hand of 3. Everyone reveals 1 hero; the highest final Power scores a point. First to 4 wins. Enemy effects hit every other hero (dmResolve). =====
    Each hero duels the strongest other hero on the table (by starting Power): its ability and that rival's ability run through
    the normal battle engine, and the hero's Power after that duel is what counts. Robot abilities use their Control (score) versions:
    "ahead" and "behind" are measured against the top other score. Effects that last past the battle (Next buffs, discards) don't carry over. */
@@ -5154,6 +5161,29 @@ function dmCtx(i, extra = {}) {
   const top = Math.max(...DM.seats.filter((_, j) => j !== i).map(s => s.score));
   const steps = seat.score - top;
   return { behind: steps < 0, steps, ...reserveView(seat), wonLast: seat.won, lostLast: seat.lost, played: seat.played, foePlayed: [], turret: 0, next: [], curse: [], ...extra };
+}
+
+/* Resolve one Deathmatch turn. Each hero's own boosts are worked out against the strongest other hero (its "rival").
+   Its effects on enemies (debuffs, steals, hacks) land on EVERY other hero: for each pair, the enemy's Power with the
+   ability on minus with it hacked is the hit that enemy takes, so shields and barriers still block as usual.
+   DM_HIT = 'rival' switches back to hitting only the rival. */
+var DM_HIT = 'all';
+function dmResolve(picks, ctxs) {
+  const base = picks.map(dmBase), n = picks.length;
+  const inp = (i, silenced) => ({ id: picks[i].id, bonus: picks[i].bonus || 0, silenced: !!(silenced || picks[i].silenced), ctx: ctxs[i] });
+  const results = picks.map((c, i) => {
+    let r = -1; for (let j = 0; j < n; j++) if (j !== i && (r < 0 || base[j] > base[r])) r = j;
+    return { rival: r, res: resolve({ p: inp(i), e: inp(r) }) };
+  });
+  if (DM_HIT === 'rival') return { final: results.map(x => x.res.powers.p), results };
+  const self = picks.map((c, i) => resolve({ p: inp(i), e: inp(results[i].rival, true) }).powers.p);
+  const final = self.slice();
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    if (i === j) continue;
+    const on = resolve({ p: inp(i), e: inp(j) }).powers.e, off = resolve({ p: inp(i, true), e: inp(j) }).powers.e;
+    final[j] += on - off;
+  }
+  return { final: final.map(v => Math.max(0, v)), results };
 }
 
 function newDM(deckId) {
@@ -5221,15 +5251,9 @@ async function dmTurn() {
   els.forEach(el => el.classList.remove('down')); Sfx.reveal();
   await dmWait(600);
 
-  // each hero duels the strongest other hero on the table
+  // abilities hit every other hero on the table (see dmResolve)
   const base = picks.map(dmBase);
-  const results = picks.map((c, i) => {
-    let r = -1; picks.forEach((d, j) => { if (j !== i && (r < 0 || base[j] > base[r])) r = j; });
-    const inP = { id: c.id, bonus: c.bonus || 0, ctx: dmCtx(i, { fromReserve: !!c.held }) };
-    const inE = { id: picks[r].id, bonus: picks[r].bonus || 0, ctx: dmCtx(r, { fromReserve: !!picks[r].held }) };
-    return { rival: r, res: resolve({ p: inP, e: inE }) };
-  });
-  const final = results.map(x => x.res.powers.p);
+  const { final, results } = dmResolve(picks, picks.map((c, i) => dmCtx(i, { fromReserve: !!c.held })));
   for (let i = 0; i < 4; i++) {
     const own = results[i].res.events.filter(ev => ev.side === 'p');
     const note = $(`.dm-seat[data-seat="${i}"] .dm-note`);
@@ -5303,6 +5327,15 @@ if ($('#dm-rules-btn')) {
     $('#dm-rules').hidden = false;
   });
   $('#dm-rules-close').addEventListener('click', () => { Sfx.click(); $('#dm-rules').hidden = true; });
+}
+if ($('#ctrl-rules-btn')) {
+  $('#ctrl-rules-btn').addEventListener('click', () => {
+    Sfx.init(); Sfx.click();
+    const body = $('#ctrl-rules .dm-rules-body'); body.innerHTML = '';
+    for (const id of ['#how-ctrl-rules', '#how-ctrl-cards']) { const b = $(id); if (b) body.appendChild(b.cloneNode(true)).removeAttribute('id'); }
+    $('#ctrl-rules').hidden = false;
+  });
+  $('#ctrl-rules-close').addEventListener('click', () => { Sfx.click(); $('#ctrl-rules').hidden = true; });
 }
 if ($('#dm-quit')) $('#dm-quit').addEventListener('click', () => { Sfx.init(); Sfx.click(); stopConfetti(); dmQuit('modes'); });
 

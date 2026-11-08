@@ -1267,6 +1267,7 @@ function ctrlBoard() {
   const C = G && G.ctrl, box = $('#ctrl-score'), lab = $('#ctrl-label');
   if (!box || !lab) return;
   box.hidden = lab.hidden = !C;
+  const rb = $('#ctrl-rules-btn'); if (rb) rb.hidden = !C;
   if (!C) return;
   G.pos = C.w.p - C.w.e; // the score lead stands in for the robot, so robot abilities read it
   const pips = (n, of, cls) => Array.from({ length: of }, (_, i) => `<i class="${i < n ? cls : ''}"></i>`).join('');

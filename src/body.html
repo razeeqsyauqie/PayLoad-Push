@@ -220,7 +220,7 @@
             <li>Pick Push, Control, Deathmatch, Quick Play or Mystery Hero on the mode screen after you tap Play.</li>
           </ul>
         </div>
-        <div class="rule-box">
+        <div class="rule-box" id="how-ctrl-rules">
           <h3>Control mode</h3>
           <ul>
             <li>No robot. Up to 3 rounds: the first to win 2 rounds wins.</li>
@@ -230,7 +230,7 @@
             <li>It plays like Push: 3 cards in hand, play 1 each turn.</li>
           </ul>
         </div>
-        <div class="rule-box">
+        <div class="rule-box" id="how-ctrl-cards">
           <h3>Card changes in Control</h3>
           <ul>
             <li>With no robot, the turn score takes its place. Cards show their Control text during a match.</li>
@@ -247,17 +247,18 @@
           <h3>Deathmatch mode</h3>
           <ul>
             <li>You against 3 bots. Each turn all 4 play 1 hero from a hand of 3 and reveal together.</li>
-            <li>Each hero duels the strongest other hero on the table, so its ability fires against that rival.</li>
-            <li>The highest Power after the duels scores 1 point. A tie at the top scores nothing.</li>
+            <li>Abilities that hit the enemy hit <b>every</b> other hero on the table. Your own boosts check the strongest other hero.</li>
+            <li>The highest Power after all abilities scores 1 point. A tie at the top scores nothing.</li>
             <li>First to 4 points wins. After 15 turns, the top score wins.</li>
           </ul>
         </div>
         <div class="rule-box" id="how-dm-cards">
           <h3>Card changes in Deathmatch</h3>
           <ul>
-            <li><b>“Enemy”</b> means the hero your card duels: the strongest other hero on the table. Each card shows “vs …” under it.</li>
+            <li><b>“Enemy”</b> means every other hero on the table: a −2 hits all three. Steals take from each of them, but you gain only once.</li>
+            <li>Conditions like “vs Damage heroes” and your own gains check the strongest other hero.</li>
             <li><b>“You’re ahead / behind / losing”</b> compares your score with the top other score.</li>
-            <li><b>Reinhardt:</b> if he loses his duel while you’re ahead, nobody scores.</li>
+            <li><b>Reinhardt:</b> if he loses while you’re ahead, nobody scores.</li>
             <li><b>Wrecking Ball:</b> −1 Power per point you are apart from the top other score.</li>
             <li><b>Sigma:</b> after the turn, the leader loses 1 point.</li>
             <li><b>Mauga</b> and <b>Brigitte:</b> a win scores 2 points.</li>
@@ -431,6 +432,7 @@
         <button class="icon-btn" id="btn-quit" aria-label="Back to menu"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="round-label push-label">Round <b id="round-no">1</b> / <span id="round-max">20</span></div>
         <div class="round-label ctrl-label" id="ctrl-label" hidden></div>
+        <button class="icon-btn dm-rules-btn ctrl-only" id="ctrl-rules-btn" aria-label="Control rules" hidden>?</button>
         <button class="icon-btn" id="btn-sound" aria-label="Toggle sound"></button>
       </div>
 
@@ -488,6 +490,7 @@
 </div>
 
 <div class="overlay" id="endscreen" hidden></div>
+<div class="overlay" id="ctrl-rules" hidden><div class="dm-rules-box"><div class="dm-rules-body"></div><button class="btn" id="ctrl-rules-close">Got it</button></div></div>
 <div class="overlay inspect" id="inspect" hidden></div>
 <div class="overlay" id="picker" hidden></div>
 <canvas id="confetti" hidden></canvas>

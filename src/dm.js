@@ -1,4 +1,4 @@
-/* ===== Deathmatch: you and 3 bots, hand of 3. Everyone reveals 1 hero; the highest final Power scores a point. First to 4 wins. =====
+/* ===== Deathmatch: you and 3 bots, hand of 3. Everyone reveals 1 hero; the highest final Power scores a point. First to 4 wins. Enemy effects hit every other hero (dmResolve). =====
    Each hero duels the strongest other hero on the table (by starting Power): its ability and that rival's ability run through
    the normal battle engine, and the hero's Power after that duel is what counts. Robot abilities use their Control (score) versions:
    "ahead" and "behind" are measured against the top other score. Effects that last past the battle (Next buffs, discards) don't carry over. */
@@ -18,6 +18,29 @@ function dmCtx(i, extra = {}) {
   const top = Math.max(...DM.seats.filter((_, j) => j !== i).map(s => s.score));
   const steps = seat.score - top;
   return { behind: steps < 0, steps, ...reserveView(seat), wonLast: seat.won, lostLast: seat.lost, played: seat.played, foePlayed: [], turret: 0, next: [], curse: [], ...extra };
+}
+
+/* Resolve one Deathmatch turn. Each hero's own boosts are worked out against the strongest other hero (its "rival").
+   Its effects on enemies (debuffs, steals, hacks) land on EVERY other hero: for each pair, the enemy's Power with the
+   ability on minus with it hacked is the hit that enemy takes, so shields and barriers still block as usual.
+   DM_HIT = 'rival' switches back to hitting only the rival. */
+var DM_HIT = 'all';
+function dmResolve(picks, ctxs) {
+  const base = picks.map(dmBase), n = picks.length;
+  const inp = (i, silenced) => ({ id: picks[i].id, bonus: picks[i].bonus || 0, silenced: !!(silenced || picks[i].silenced), ctx: ctxs[i] });
+  const results = picks.map((c, i) => {
+    let r = -1; for (let j = 0; j < n; j++) if (j !== i && (r < 0 || base[j] > base[r])) r = j;
+    return { rival: r, res: resolve({ p: inp(i), e: inp(r) }) };
+  });
+  if (DM_HIT === 'rival') return { final: results.map(x => x.res.powers.p), results };
+  const self = picks.map((c, i) => resolve({ p: inp(i), e: inp(results[i].rival, true) }).powers.p);
+  const final = self.slice();
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    if (i === j) continue;
+    const on = resolve({ p: inp(i), e: inp(j) }).powers.e, off = resolve({ p: inp(i, true), e: inp(j) }).powers.e;
+    final[j] += on - off;
+  }
+  return { final: final.map(v => Math.max(0, v)), results };
 }
 
 function newDM(deckId) {
@@ -85,15 +108,9 @@ async function dmTurn() {
   els.forEach(el => el.classList.remove('down')); Sfx.reveal();
   await dmWait(600);
 
-  // each hero duels the strongest other hero on the table
+  // abilities hit every other hero on the table (see dmResolve)
   const base = picks.map(dmBase);
-  const results = picks.map((c, i) => {
-    let r = -1; picks.forEach((d, j) => { if (j !== i && (r < 0 || base[j] > base[r])) r = j; });
-    const inP = { id: c.id, bonus: c.bonus || 0, ctx: dmCtx(i, { fromReserve: !!c.held }) };
-    const inE = { id: picks[r].id, bonus: picks[r].bonus || 0, ctx: dmCtx(r, { fromReserve: !!picks[r].held }) };
-    return { rival: r, res: resolve({ p: inP, e: inE }) };
-  });
-  const final = results.map(x => x.res.powers.p);
+  const { final, results } = dmResolve(picks, picks.map((c, i) => dmCtx(i, { fromReserve: !!c.held })));
   for (let i = 0; i < 4; i++) {
     const own = results[i].res.events.filter(ev => ev.side === 'p');
     const note = $(`.dm-seat[data-seat="${i}"] .dm-note`);
@@ -167,5 +184,14 @@ if ($('#dm-rules-btn')) {
     $('#dm-rules').hidden = false;
   });
   $('#dm-rules-close').addEventListener('click', () => { Sfx.click(); $('#dm-rules').hidden = true; });
+}
+if ($('#ctrl-rules-btn')) {
+  $('#ctrl-rules-btn').addEventListener('click', () => {
+    Sfx.init(); Sfx.click();
+    const body = $('#ctrl-rules .dm-rules-body'); body.innerHTML = '';
+    for (const id of ['#how-ctrl-rules', '#how-ctrl-cards']) { const b = $(id); if (b) body.appendChild(b.cloneNode(true)).removeAttribute('id'); }
+    $('#ctrl-rules').hidden = false;
+  });
+  $('#ctrl-rules-close').addEventListener('click', () => { Sfx.click(); $('#ctrl-rules').hidden = true; });
 }
 if ($('#dm-quit')) $('#dm-quit').addEventListener('click', () => { Sfx.init(); Sfx.click(); stopConfetti(); dmQuit('modes'); });

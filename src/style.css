@@ -836,3 +836,6 @@ button, .card, .slot { touch-action: manipulation; }
 .dm-rules-box { max-width: 560px; max-height: 86dvh; overflow: auto; margin: auto; padding: 18px; border-radius: 16px; background: var(--bg1); border: 1px solid var(--line); text-align: left; }
 .dm-rules-box .rule-box { margin-bottom: 12px; }
 .dm-rules-box .btn { display: block; margin: 6px auto 0; }
+
+.icon-btn[hidden] { display: none !important; }
+#board.ctrlmode .topbar .round-label { margin-left: auto; margin-right: auto; }
