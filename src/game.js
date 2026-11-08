@@ -111,7 +111,7 @@ function paintArt(el, id, pick) {
 }
 const CARD_OF = new WeakMap(); // card element -> the card object it shows
 function cardEl(card, opts = {}) {
-  const h = HEROES[card.id];
+  const h = abilityView(HEROES[card.id]);
   const el = document.createElement('div');
   CARD_OF.set(el, card);
   const full = settings.cardStyle !== 'classic', art = full && hasArt(h.id);
@@ -1080,7 +1080,7 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
     els[r.winner].classList.add('won');
     els[other(r.winner)].classList.add('lost');
     if (r.winner === 'p') Sfx.win(); else Sfx.lose();
-    const pushTxt = G.ctrl ? 'Turn won' : r.push === 0 ? 'Robot holds' : r.push > 2 ? 'Game won' : r.push === 2 ? 'Push 2' : 'Push 1';
+    const pushTxt = G.ctrl ? (r.push === 0 ? 'Nobody scores' : r.push >= 2 ? 'Scores ' + Math.min(r.push, CTRL_WIN) : 'Scores 1') : r.push === 0 ? 'Robot holds' : r.push > 2 ? 'Game won' : r.push === 2 ? 'Push 2' : 'Push 1';
     res.innerHTML = (r.winner === 'p' ? 'You win' : G.online ? 'Friend wins' : 'Enemy wins') + `<small>${r.powers.p} vs ${r.powers.e} · ${pushTxt}</small>`;
     res.className = 'result show ' + (r.winner === 'p' ? 'ally' : 'enemy');
   } else {
@@ -1091,7 +1091,13 @@ async function battle(pCard, pEl, pFromRes, pBlind, eCard, eEl, eFromRes) {
   await wait(1100);
 
   // 6. PUSH
-  if (G.ctrl) { if (r.winner) { G.ctrl.w[r.winner]++; Sfx.push(); } ctrlBoard(); }
+  if (G.ctrl) {
+    const C = G.ctrl;
+    if (r.winner && r.push) { C.w[r.winner] += Math.min(r.push, CTRL_WIN); Sfx.push(); }
+    else if (r.winner) toast('Nobody scores this turn');
+    if (r.pull && C.w.p !== C.w.e) { const lead = C.w.p > C.w.e ? 'p' : 'e'; C.w[lead]--; toast('Gravitic Flux: the leader loses 1 point'); Sfx.ability('swap'); }
+    ctrlBoard();
+  }
   else if (r.winner && r.push) {
     G.pos += r.winner === 'p' ? r.push : -r.push;
     G.pos = Math.max(-G.goal, Math.min(G.goal, G.pos));
@@ -1238,11 +1244,28 @@ function syncModeDesc() { setPowerMode(settings.mode); const d = $('#mode-desc')
 
 /* ---------- Control mode: 3 rounds of up to 5 turns. 3 turn wins end a round early; after 5 turns more turn wins takes it, equal is a draw. First to 2 rounds wins. ---------- */
 const CTRL_TURNS = 5, CTRL_WIN = 3, CTRL_NEED = 2, CTRL_ROUNDS = 3; // 3 rounds at most
+/* In Control the robot is gone: these heroes keep their core ability but read the turn score instead. */
+const CTRL_TEXT = {
+  reinhardt: 'If he loses while you’re ahead, nobody scores.',
+  wreckingball: '−1 per point the score is apart.',
+  sigma: 'After battle: the leader loses 1 point.',
+  mauga: 'Win: score 2. Lose: enemy scores 2.',
+  brigitte: 'If she loses: your next win scores 2.',
+  mizuki: 'He and next hero +1 per point you’re behind.',
+};
+const ctrlCards = () => !!(G && G.ctrl && !G.over);
+function abilityView(h) { return ctrlCards() && CTRL_TEXT[h.id] ? { ...h, ability: { ...h.ability, text: CTRL_TEXT[h.id] } } : h; }
+function ctrlWords(t) {
+  return t.replace(/Pushes the robot (\d+)!/, 'Scores $1!').replace('Carries the robot 2!', 'Scores 2!').replace('Pushes the robot 2.', 'Scores 2.')
+    .replace('Enemy pushes 2.', 'Enemy scores 2.').replace('Wins the game!', 'Wins the round!').replace('The robot doesn’t move.', 'Nobody scores.')
+    .replace(/the robot is (\d+) steps? from the middle/, 'the score is $1 apart').replace('from the robot’s position', 'from the score');
+}
 function ctrlBoard() {
   const C = G && G.ctrl, box = $('#ctrl-score'), lab = $('#ctrl-label');
   if (!box || !lab) return;
   box.hidden = lab.hidden = !C;
   if (!C) return;
+  G.pos = C.w.p - C.w.e; // the score lead stands in for the robot, so robot abilities read it
   const pips = (n, of, cls) => Array.from({ length: of }, (_, i) => `<i class="${i < n ? cls : ''}"></i>`).join('');
   lab.innerHTML = `Round <b>${C.round}</b> · Turn <b>${Math.min(C.turn + 1, CTRL_TURNS)}</b> / ${CTRL_TURNS}`;
   box.innerHTML = `<div class="cs-side ally"><span class="cs-name">You</span><span class="cs-turns">${pips(C.w.p, CTRL_WIN, 'on')}</span><span class="cs-rounds">${pips(C.rw.p, CTRL_NEED, 'star')}</span></div>`
@@ -1445,7 +1468,7 @@ async function showEvent(ev, els, base) {
   c.classList.remove('show');
   await wait(120);
   c.querySelector('.ct').textContent = ev.title;
-  c.querySelector('.cx').textContent = ev.text;
+  c.querySelector('.cx').textContent = G.ctrl ? ctrlWords(ev.text) : ev.text;
   c.classList.toggle('enemy', ev.side === 'e');
   c.classList.add('show');
   fx(els[ev.side], 'casting', 900);
