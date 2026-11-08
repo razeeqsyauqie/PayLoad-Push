@@ -159,4 +159,13 @@ function dmQuit(to) {
   $('#dm-end').hidden = true;
   show(to);
 }
+if ($('#dm-rules-btn')) {
+  $('#dm-rules-btn').addEventListener('click', () => {
+    Sfx.init(); Sfx.click();
+    const body = $('#dm-rules .dm-rules-body'); body.innerHTML = '';
+    for (const id of ['#how-dm-rules', '#how-dm-cards']) { const b = $(id); if (b) body.appendChild(b.cloneNode(true)).removeAttribute('id'); }
+    $('#dm-rules').hidden = false;
+  });
+  $('#dm-rules-close').addEventListener('click', () => { Sfx.click(); $('#dm-rules').hidden = true; });
+}
 if ($('#dm-quit')) $('#dm-quit').addEventListener('click', () => { Sfx.init(); Sfx.click(); stopConfetti(); dmQuit('modes'); });

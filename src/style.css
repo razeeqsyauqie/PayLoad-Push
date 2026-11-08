@@ -831,3 +831,8 @@ button, .card, .slot { touch-action: manipulation; }
 .dm-standings li { display: flex; justify-content: space-between; padding: 4px 10px; border-radius: 8px; }
 .dm-standings li.me { background: rgba(60, 200, 255, .12); color: var(--ally); }
 @media (max-width: 560px) { .dm-bots { gap: 6px; } .dm-seat { padding: 6px 4px; } .dm-name { font-size: 13px; } .dm-result { font-size: 22px; } .dm-hand { gap: 6px; } }
+
+.dm-rules-btn { font-family: var(--f-display); font-weight: 800; font-size: 20px; }
+.dm-rules-box { max-width: 560px; max-height: 86dvh; overflow: auto; margin: auto; padding: 18px; border-radius: 16px; background: var(--bg1); border: 1px solid var(--line); text-align: left; }
+.dm-rules-box .rule-box { margin-bottom: 12px; }
+.dm-rules-box .btn { display: block; margin: 6px auto 0; }

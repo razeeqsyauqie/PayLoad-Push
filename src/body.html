@@ -162,7 +162,7 @@
       <div class="topbar">
         <button class="icon-btn" id="dm-quit" aria-label="Back to modes"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="round-label" id="dm-turn"></div>
-        <span class="dm-spacer"></span>
+        <button class="icon-btn dm-rules-btn" id="dm-rules-btn" aria-label="Deathmatch rules">?</button>
       </div>
       <div class="dm-bots"><div class="dm-seat" data-seat="1"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-seat" data-seat="2"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-seat" data-seat="3"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div></div>
       <div class="dm-mid"><div class="dm-seat me" data-seat="0"><div class="dm-head"><span class="dm-name"></span><span class="dm-pips"></span></div><span class="dm-deck"></span><div class="dm-slot"></div><p class="dm-note"></p></div><div class="dm-result" id="dm-result"></div></div>
@@ -170,6 +170,7 @@
       <div class="dm-hand" id="dm-hand"></div>
     </div>
     <div class="overlay" id="dm-end" hidden></div>
+    <div class="overlay" id="dm-rules" hidden><div class="dm-rules-box"><div class="dm-rules-body"></div><button class="btn" id="dm-rules-close">Got it</button></div></div>
   </section>
   <!-- HOW TO PLAY -->
   <section class="screen" id="scr-howto" hidden>
@@ -242,13 +243,27 @@
             <li><b>Freja</b> and other “if you’re losing” cards check the turn score. A card that wins the game wins the round instead.</li>
           </ul>
         </div>
-        <div class="rule-box">
+        <div class="rule-box" id="how-dm-rules">
           <h3>Deathmatch mode</h3>
           <ul>
             <li>You against 3 bots. Each turn all 4 play 1 hero from a hand of 3 and reveal together.</li>
             <li>Each hero duels the strongest other hero on the table, so its ability fires against that rival.</li>
             <li>The highest Power after the duels scores 1 point. A tie at the top scores nothing.</li>
-            <li>First to 4 points wins. After 15 turns, the top score wins. Robot abilities use their Control versions.</li>
+            <li>First to 4 points wins. After 15 turns, the top score wins.</li>
+          </ul>
+        </div>
+        <div class="rule-box" id="how-dm-cards">
+          <h3>Card changes in Deathmatch</h3>
+          <ul>
+            <li><b>“Enemy”</b> means the hero your card duels: the strongest other hero on the table. Each card shows “vs …” under it.</li>
+            <li><b>“You’re ahead / behind / losing”</b> compares your score with the top other score.</li>
+            <li><b>Reinhardt:</b> if he loses his duel while you’re ahead, nobody scores.</li>
+            <li><b>Wrecking Ball:</b> −1 Power per point you are apart from the top other score.</li>
+            <li><b>Sigma:</b> after the turn, the leader loses 1 point.</li>
+            <li><b>Mauga</b> and <b>Brigitte:</b> a win scores 2 points.</li>
+            <li><b>Mizuki:</b> +1 per point you’re behind.</li>
+            <li>A card that wins the game outright scores 4 points.</li>
+            <li>Effects that happen after the battle don’t apply yet: Next-hero buffs, discards, Tracer’s Recall, Jetpack Cat’s Rally and similar.</li>
           </ul>
         </div>
         <div class="rule-box">
