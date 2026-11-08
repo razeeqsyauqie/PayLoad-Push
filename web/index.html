@@ -204,6 +204,9 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 }
 .card-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.2, .8, .2, 1); }
 .card.down .card-inner { transform: rotateY(180deg); }
+/* iPhone Safari ignores backface-visibility on full-art pop-outs, so a face-down card hides its front outright (shown again halfway through a flip). */
+.card .face.front { transition: visibility 0s linear .22s; }
+.card.down .face.front { visibility: hidden; }
 .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 6.5cqw; overflow: hidden; }
 .front {
   background: var(--paper); color: var(--paper-ink);
