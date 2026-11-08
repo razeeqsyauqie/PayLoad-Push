@@ -77,7 +77,7 @@ const HEROES = Object.fromEntries([
   H('mizuki', 'Mizuki', 'support', 3, '#c7a0ff', '#2e1d58', 'Katashiro Return', 'He and next hero +1 per robot step on your side.', { type: 'next', give: 'boost', amount: 1, perBehind: true, self: true }),
   H('jetpackcat', 'Jetpack Cat', 'support', 3, '#ffd36b', '#7a4a10', 'Rally', 'After battle: pick 1 of 3 deck cards. To Reserve, +3.', { type: 'tutor', count: 3, amount: 3 }),
   H('doctrine', 'Doctrine', 'support', 6, '#c0303f', '#1a0a12', 'Deliverance', 'After battle: enemy hand −1, your hand +1.', { type: 'handSwing', amount: 1 }),
-  H('wuyang', 'Wuyang', 'support', 4, '#7fd8ff', '#14466b', 'Xuanwu Staff', 'In hand: when you discard a card, your hero in play and top deck card +2. Can’t be discarded.', { type: 'discardWatch', mode: 'both', amount: 2 }),
+  H('wuyang', 'Wuyang', 'support', 4, '#7fd8ff', '#14466b', 'Xuanwu Staff', 'In hand: when you discard a card, your hero in play and top deck card +2.', { type: 'discardWatch', mode: 'both', amount: 2 }),
 ]);
 // Sojourn starts at 0 in Hand of 3 but 4 in Classic, and counts as 4 toward a custom deck's Power limit.
 Object.assign(HEROES.sojourn, { modePower: { hand: 0, classic: 4 }, deckPower: 4 });
