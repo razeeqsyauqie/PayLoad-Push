@@ -1579,7 +1579,7 @@ const HEROES = Object.fromEntries([
   // ---- Damage
   H('soldier', 'Soldier: 76', 'damage', 7, '#5383cc', '#14203b', 'No ability', 'No tricks, just Power.', NONE),
   H('cassidy', 'Cassidy', 'damage', 7, '#d27c45', '#4a2011', 'Deadeye', 'Discard enemy’s top card. Damage: +2, else −2.', { type: 'mill', amount: 2 }),
-  H('genji', 'Genji', 'damage', 6, '#9af585', '#1a5832', 'Deflect', 'Debuffs on him hit the enemy.', { type: 'deflect' }),
+  H('genji', 'Genji', 'damage', 6, '#9af585', '#1a5832', 'Deflect', 'Anything aimed at him hits the enemy instead.', { type: 'deflect' }),
   H('hanzo', 'Hanzo', 'damage', 6, '#7fb4ff', '#1b3260', 'Sonic Arrow', 'Hack an enemy Support. From Reserve: any hero.', { type: 'hack', when: { vsRole: 'support', orFromReserve: true } }),
   H('tracer', 'Tracer', 'damage', 4, '#ffb34f', '#bf3d0b', 'Recall', 'If she loses: back to hand. She and your hand +2.', { type: 'recall', amount: 2, hand: 2 }),
   H('widowmaker', 'Widowmaker', 'damage', 3, '#b08ad8', '#2a1840', 'Headshot', 'From Reserve: enemy −4. Unblockable.', weaken(4, { fromReserve: true }, true)),
@@ -1764,6 +1764,13 @@ function resolve(input, rng = Math.random) {
   // 3. Hacks (simultaneous)
   const hacks = ['p', 'e'].filter(s => has(s, 'hack') && condMet(S[s].fx.when, S[s].ctx, S[other(s)].hero) && S[other(s)].fx);
   const hits = { p: 0, e: 0 };
+  // Genji · Deflect sends a blockable hack back: the hacker loses its ability instead
+  const bounced = hacks.filter(s => has(other(s), 'deflect') && !shielded(other(s)));
+  for (const s of bounced) {
+    hacks.splice(hacks.indexOf(s), 1);
+    ev(other(s), 'deflect', 'Sends the hack back! ' + S[s].hero.name + '’s ability is disabled.', { target: s });
+    if (!shielded(s)) { S[s].fx = null; S[s].hacked = true; hits[s]++; }
+  }
   for (const s of hacks) {
     const t = other(s);
     if (immune(t)) ev(t, 'barrier', 'Jumps clear of ' + S[s].abName + '.', { target: t });
@@ -1772,7 +1779,11 @@ function resolve(input, rng = Math.random) {
   }
   for (const s of hacks) { const t = other(s); if (!shielded(t)) { S[t].fx = null; S[t].hacked = true; hits[t]++; } }
   for (const t of ['p', 'e']) {
-    if (S[t].ctx.hackedNext && S[t].fx && !shielded(t)) {
+    if (S[t].ctx.hackedNext && has(t, 'deflect') && !shielded(t)) {
+      const o = other(t);
+      events.push({ side: t, kind: 'deflect', title: S[t].hero.name + ' · ' + S[t].abName, text: 'Sends Sombra’s hack back! ' + S[o].hero.name + '’s ability is disabled.', powers: snap(), target: o });
+      if (S[o].fx && !shielded(o)) { S[o].fx = null; S[o].hacked = true; }
+    } else if (S[t].ctx.hackedNext && S[t].fx && !shielded(t)) {
       events.push({ side: other(t), kind: 'hack', title: 'Sombra · Hack', text: S[t].hero.name + '’s ability is still hacked.', powers: snap(), target: t });
       S[t].fx = null; S[t].hacked = true;
     }
@@ -1801,13 +1812,15 @@ function resolve(input, rng = Math.random) {
     if (immune(t)) { ev(t, 'barrier', 'Can’t be touched.', { target: t }); return false; }
     if (foe.suzu) { events.push({ side: t, kind: 'barrier', title: foe.suzu, text: 'Shields ' + foe.hero.name + '.', powers: snap(), target: t }); return false; }
     if (!bypass && foe.protected) { events.push({ side: t, kind: 'barrier', title: foe.protected, text: 'Shields ' + foe.hero.name + '.', powers: snap(), target: t }); return false; }
+    // Genji · Deflect: anything aimed at him, even unblockable or left from an earlier battle, hits the enemy hero instead
+    if (has(t, 'deflect')) {
+      const back = src || other(t);
+      S[back].power = Math.max(0, S[back].power - amt);
+      ev(t, 'deflect', 'Sends it back! ' + S[back].hero.name + ' −' + amt + ' Power.', { target: back, delta: -amt });
+      return false;
+    }
     if (!bypass) {
       if (has(t, 'barrier')) { ev(t, 'barrier', 'Blocks ' + (src ? S[src].abName : 'it') + '.', { target: t }); return false; }
-      if (has(t, 'deflect') && src) {
-        S[src].power = Math.max(0, S[src].power - amt);
-        ev(t, 'deflect', 'Sends it back! ' + S[src].hero.name + ' −' + amt + ' Power.', { target: src, delta: -amt });
-        return false;
-      }
       if (has(t, 'convert')) {
         foe.power += amt; ev(t, 'convert', 'Absorbs the hit: +' + amt + ' Power!', { target: t, delta: amt }); hits[t]++; return false;
       }
@@ -1825,7 +1838,7 @@ function resolve(input, rng = Math.random) {
   for (const t of ['p', 'e']) {
     for (const c of S[t].ctx.curse || []) {
       const title = c.by + ' · ' + c.name;
-      if (c.antiheal && !frozen && !immune(t)) S[t].antiheal = title;
+      if (c.antiheal && !frozen && !immune(t)) S[has(t, 'deflect') ? other(t) : t].antiheal = title;
       lower(t, c.amount, S[t].hero.name + ' −# Power.', 'weaken', null, false, title);
     }
   }
@@ -1858,6 +1871,7 @@ function resolve(input, rng = Math.random) {
   else if (swappers.length === 1) {
     const s = swappers[0], t = other(s), foe = S[t];
     if (has(t, 'barrier') || immune(t)) ev(t, 'barrier', 'Blocks the Teleporter.', { target: t });
+    else if (has(t, 'deflect')) ev(t, 'deflect', 'Deflects the swap.', { target: t });
     else { const x = S[s].power; S[s].power = foe.power; foe.power = x; hits[t]++; ev(s, 'swap', 'Swaps Power with ' + foe.hero.name + '.', { target: t }); }
   } else if (swappers.length === 2) {
     events.push({ side: 'p', kind: 'swap', title: 'Teleporter', text: 'Both teleporters cancel out.', powers: snap() });
